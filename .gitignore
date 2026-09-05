@@ -41,6 +41,8 @@ pids
 
 # Next.js / Vite / framework output
 .next/
+next-env.d.ts
+/.next/
 out/
 .vite/
 .turbo/
