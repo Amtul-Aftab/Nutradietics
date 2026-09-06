@@ -29,11 +29,11 @@ Each task is scoped to be completable in a single sitting. Requirement reference
 
 ## Phase 2: Professional Profile & Services (Req 2, 3)
 
-- [ ] 2.1 Build `PUT /professionals/me/profile` to create/update name, professional type, specialty, bio; validate required fields and constrain type to the two allowed values (Req 2.1–2.4).
-- [ ] 2.2 Build the professional profile editor UI, including the professional-type selector.
-- [ ] 2.3 Build service CRUD routes: `POST/PUT/DELETE /professionals/me/services`; validate price as a non-negative integer (cents) and denormalize the professional's type onto each service (Req 3.1–3.3).
-- [ ] 2.4 Build `GET /professionals/me/services` and the dashboard listing of active services (Req 3.4).
-- [ ] 2.5 Build the services management UI (create/edit/remove) with price validation feedback.
+- [x] 2.1 Build `PUT /professionals/me/profile` to create/update name, professional type, specialty, bio; validate required fields and constrain type to the two allowed values (Req 2.1–2.4).
+- [x] 2.2 Build the professional profile editor UI, including the professional-type selector.
+- [x] 2.3 Build service CRUD routes: `POST/PUT/DELETE /professionals/me/services`; validate price as a non-negative integer (cents) and denormalize the professional's type onto each service (Req 3.1–3.3).
+- [x] 2.4 Build `GET /professionals/me/services` and the dashboard listing of active services (Req 3.4).
+- [x] 2.5 Build the services management UI (create/edit/remove) with price validation feedback.
 
 ---
 

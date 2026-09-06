@@ -99,7 +99,7 @@ a {
   text-decoration: underline;
 }
 
-/* --- Dashboard placeholder --- */
+/* --- Dashboard --- */
 .dashboard {
   max-width: 720px;
   margin: 0 auto;
@@ -107,6 +107,89 @@ a {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+}
+
+.dashboard__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.dashboard__header a {
+  font-size: 0.9rem;
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.dashboard__links {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.dashboard__links a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+/* --- Textarea (reuses .input styling) --- */
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.4;
+}
+
+/* --- Save confirmation --- */
+.form-saved {
+  color: var(--color-primary);
+  font-size: 0.9rem;
+  margin-bottom: var(--space-3);
+}
+
+/* --- Services manager --- */
+.services {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.services__list ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.services__item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.services__desc {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  margin-top: var(--space-1);
+}
+
+.services__actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.services__empty {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.services__form-actions {
+  display: flex;
+  gap: var(--space-2);
 }
 
 /* Accessibility helper: visually hidden but available to screen readers */

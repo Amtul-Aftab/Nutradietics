@@ -42,3 +42,18 @@ export async function requireRole(
   }
   return session;
 }
+
+/**
+ * Maps an AuthError (or unknown error) to a JSON Response with the right status.
+ * Use in route handler catch blocks for consistent 401/403 handling.
+ */
+export function authErrorResponse(error: unknown): Response {
+  if (error instanceof AuthError) {
+    return Response.json({ error: error.message }, { status: error.status });
+  }
+  console.error("Unhandled route error:", error);
+  return Response.json(
+    { error: "Something went wrong." },
+    { status: 500 },
+  );
+}
