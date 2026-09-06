@@ -49,6 +49,11 @@ export async function POST(request: Request) {
           data: { userId: user.id, name: name ?? null },
         });
       }
+    }, {
+      // Remote Supabase adds network latency; give the interactive transaction
+      // more room than Prisma's 5s default to acquire a connection and commit.
+      maxWait: 15000, // max time to wait for a connection from the pool
+      timeout: 15000, // max time the transaction may run once started
     });
   } catch (error) {
     // Unique constraint violation on email — respond generically (Req 1.3).
