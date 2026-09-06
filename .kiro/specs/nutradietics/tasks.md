@@ -18,12 +18,12 @@ Each task is scoped to be completable in a single sitting. Requirement reference
 
 ## Phase 1: Authentication & Roles (Req 1)
 
-- [ ] 1.1 Install and configure Auth.js (NextAuth) with the Credentials provider and a route handler at `app/api/auth/[...nextauth]`.
-- [ ] 1.2 Implement password hashing (argon2/bcrypt) helpers for creating and verifying credentials (Req 1.4, 1.5).
-- [ ] 1.3 Build the custom `POST /api/auth/signup` route: create `User` plus the matching `Professional` or `ClientProfile`; require `professionalType` when role is professional; reject duplicate email with a generic error (Req 1.2, 1.3).
-- [ ] 1.4 Configure Auth.js session/JWT callbacks to include `userId`, `role`, and (for professionals) `professionalType` (Req 1.6).
-- [ ] 1.5 Add a `getSession`/`requireRole` server helper and route-protection middleware; return 401 for unauthenticated and 403 for wrong-role access (Req 1.6, 1.7).
-- [ ] 1.6 Build sign-up, sign-in, and sign-out UI wired to Auth.js; redirect authenticated users to the correct dashboard by role.
+- [x] 1.1 Install and configure Auth.js (NextAuth) with the Credentials provider and a route handler at `app/api/auth/[...nextauth]`.
+- [x] 1.2 Implement password hashing (argon2/bcrypt) helpers for creating and verifying credentials (Req 1.4, 1.5).
+- [x] 1.3 Build the custom `POST /api/auth/signup` route: create `User` plus the matching `Professional` or `ClientProfile`; require `professionalType` when role is professional; reject duplicate email with a generic error (Req 1.2, 1.3).
+- [x] 1.4 Configure Auth.js session/JWT callbacks to include `userId`, `role`, and (for professionals) `professionalType` (Req 1.6).
+- [x] 1.5 Add a `getSession`/`requireRole` server helper and route-protection middleware; return 401 for unauthenticated and 403 for wrong-role access (Req 1.6, 1.7).
+- [x] 1.6 Build sign-up, sign-in, and sign-out UI wired to Auth.js; redirect authenticated users to the correct dashboard by role.
 
 ---
 
