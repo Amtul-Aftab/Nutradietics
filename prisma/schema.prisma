@@ -1,11 +1,189 @@
 // Nutradietics Prisma schema
-// Datasource + generator setup (task 0.2). Models are added in task 0.3.
+// Data model per design.md (task 0.3).
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // transaction pooler (6543) for runtime queries
+  directUrl = env("DIRECT_URL") // session pooler (5432) for migrations
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  CLIENT
+  PROFESSIONAL
+}
+
+enum ProfessionalType {
+  NUTRITIONIST
+  FITNESS_TRAINER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  UNSPECIFIED
+}
+
+enum IntakeStatus {
+  DESCRIBED
+  CLASSIFIED
+  FIELDS_COLLECTED
+  QUESTIONS_READY
+  ANSWERED
+  MATCHED
+  BOOKED
+}
+
+enum SlotStatus {
+  AVAILABLE
+  BOOKED
+  REMOVED
+}
+
+enum AppointmentStatus {
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+// ---------------------------------------------------------------------------
+// Core models
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+
+  professional  Professional? // set when role = PROFESSIONAL
+  clientProfile ClientProfile? // set when role = CLIENT
+}
+
+model Professional {
+  id        String           @id @default(uuid())
+  userId    String           @unique
+  user      User             @relation(fields: [userId], references: [id])
+  name      String
+  type      ProfessionalType // Req 1.2, 2.4
+  specialty String
+  bio       String?
+
+  services       Service[]
+  slots          TimeSlot[]
+  appointments   Appointment[]
+  sessionRecords SessionRecord[]
+}
+
+model ClientProfile {
+  id     String  @id @default(uuid())
+  userId String  @unique
+  user   User    @relation(fields: [userId], references: [id])
+  name   String?
+
+  intakes      Intake[]
+  appointments Appointment[]
+  // medical history is derived from intakes + summaries + session records
+}
+
+model Service {
+  id             String           @id @default(uuid())
+  professionalId String
+  professional   Professional     @relation(fields: [professionalId], references: [id])
+  type           ProfessionalType // denormalized from professional for match filtering (Req 3.1)
+  specialty      String
+  description    String
+  priceCents     Int // integer cents; validated >= 0 (Req 3.3)
+  active         Boolean          @default(true)
+}
+
+model TimeSlot {
+  id             String       @id @default(uuid())
+  professionalId String
+  professional   Professional @relation(fields: [professionalId], references: [id])
+  startsAt       DateTime
+  endsAt         DateTime
+  status         SlotStatus   @default(AVAILABLE)
+  // overlap prevention enforced by an application-level check in the service layer (Req 4.2)
+
+  appointment Appointment?
+}
+
+model Intake {
+  id               String            @id @default(uuid())
+  clientProfileId  String
+  clientProfile    ClientProfile     @relation(fields: [clientProfileId], references: [id])
+  description      String
+  professionalType ProfessionalType? // set at CLASSIFIED (Req 6)
+  standardFields   Json? // type-specific field set (Req 7)
+  status           IntakeStatus      @default(DESCRIBED)
+  createdAt        DateTime          @default(now())
+
+  questions   FollowUpQuestion[]
+  match       Match?
+  summary     PatientSummary?
+  appointment Appointment?
+}
+
+model FollowUpQuestion {
+  id       String  @id @default(uuid())
+  intakeId String
+  intake   Intake  @relation(fields: [intakeId], references: [id])
+  order    Int
+  question String
+  answer   String? // filled at ANSWERED (Req 8.7)
+}
+
+model Match {
+  id                    String   @id @default(uuid())
+  intakeId              String   @unique
+  intake                Intake   @relation(fields: [intakeId], references: [id])
+  matchedProfessionalId String
+  rationale             String // AI-provided reasoning (Req 9.4)
+  createdAt             DateTime @default(now())
+}
+
+model PatientSummary {
+  id        String   @id @default(uuid())
+  intakeId  String   @unique
+  intake    Intake   @relation(fields: [intakeId], references: [id])
+  summary   String // AI-generated (Req 10)
+  createdAt DateTime @default(now())
+}
+
+model Appointment {
+  id              String            @id @default(uuid())
+  intakeId        String            @unique
+  intake          Intake            @relation(fields: [intakeId], references: [id])
+  clientProfileId String
+  clientProfile   ClientProfile     @relation(fields: [clientProfileId], references: [id])
+  professionalId  String
+  professional    Professional      @relation(fields: [professionalId], references: [id])
+  timeSlotId      String            @unique
+  timeSlot        TimeSlot          @relation(fields: [timeSlotId], references: [id])
+  status          AppointmentStatus @default(CONFIRMED)
+  createdAt       DateTime          @default(now())
+
+  sessionRecord SessionRecord?
+}
+
+model SessionRecord {
+  id             String       @id @default(uuid())
+  appointmentId  String       @unique
+  appointment    Appointment  @relation(fields: [appointmentId], references: [id])
+  professionalId String // author; only they may edit (Req 12.6)
+  professional   Professional @relation(fields: [professionalId], references: [id])
+  diagnosis      String // professional-entered, NOT AI (Req 12.2)
+  plan           String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }

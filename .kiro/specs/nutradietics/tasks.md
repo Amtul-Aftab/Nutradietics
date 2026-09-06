@@ -9,8 +9,8 @@ Each task is scoped to be completable in a single sitting. Requirement reference
 ## Phase 0: Project Setup
 
 - [x] 0.1 Initialize the Next.js (TypeScript) app in the repo root, with the App Router and a basic health-check page to confirm it runs.
-- [ ] 0.2 Add and configure Prisma; create the initial `schema.prisma` with the datasource pointing at PostgreSQL via `DATABASE_URL`.
-- [ ] 0.3 Define all enums and models from the design's data model (`User`, `Professional`, `ClientProfile`, `Service`, `TimeSlot`, `Intake`, `FollowUpQuestion`, `Match`, `PatientSummary`, `Appointment`, `SessionRecord`) in `schema.prisma`, run the first migration, and generate the Prisma client.
+- [x] 0.2 Add and configure Prisma; create the initial `schema.prisma` with the datasource pointing at PostgreSQL via `DATABASE_URL`.
+- [x] 0.3 Define all enums and models from the design's data model (`User`, `Professional`, `ClientProfile`, `Service`, `TimeSlot`, `Intake`, `FollowUpQuestion`, `Match`, `PatientSummary`, `Appointment`, `SessionRecord`) in `schema.prisma`, run the first migration, and generate the Prisma client.
 - [ ] 0.4 Add a shared Prisma client singleton and confirm the app can connect to a local database.
 - [ ] 0.5 Set up a base layout, shared UI primitives (button, input, form field, spinner, error banner), and a simple app-wide error/loading convention.
 
