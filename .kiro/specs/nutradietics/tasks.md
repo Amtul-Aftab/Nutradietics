@@ -39,9 +39,9 @@ Each task is scoped to be completable in a single sitting. Requirement reference
 
 ## Phase 3: Time Slots (Req 4)
 
-- [ ] 3.1 Implement the slot service with validation: `endsAt > startsAt`, `startsAt` in the future, and the application-level overlap check against the professional's existing non-removed slots (Req 4.2, 4.3).
-- [ ] 3.2 Build `POST /professionals/me/slots` and `DELETE /professionals/me/slots/:id` (delete only when unbooked), returning 409 on overlap (Req 4.1, 4.2, 4.5).
-- [ ] 3.3 Build the availability management UI (add/remove slots) showing available vs booked state.
+- [x] 3.1 Implement the slot service with validation: `endsAt > startsAt`, `startsAt` in the future, and the application-level overlap check against the professional's existing non-removed slots (Req 4.2, 4.3).
+- [x] 3.2 Build `POST /professionals/me/slots` and `DELETE /professionals/me/slots/:id` (delete only when unbooked), returning 409 on overlap (Req 4.1, 4.2, 4.5).
+- [x] 3.3 Build the availability management UI (add/remove slots) showing available vs booked state.
 
 ---
 

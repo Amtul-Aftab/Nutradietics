@@ -19,6 +19,7 @@ export default async function ProfessionalDashboardPage() {
       <nav className="dashboard__links">
         <Link href="/professional/profile">Edit profile</Link>
         <Link href="/professional/services">Manage services</Link>
+        <Link href="/professional/availability">Manage availability</Link>
       </nav>
     </main>
   );
