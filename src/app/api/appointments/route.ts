@@ -12,8 +12,11 @@ export const runtime = "nodejs";
 
 /**
  * Books an appointment for the signed-in client (Req 11.2, 11.4).
- * Body: { professionalId, timeSlotId }. The intakeId linkage is added in
- * Phase 10; direct bookings leave it null.
+ *
+ * Two body shapes are supported:
+ *  - Intake-driven: { intakeId, timeSlotId } — the professional is derived from
+ *    the intake's match; on success the intake is set to BOOKED (Req 11.2).
+ *  - Direct: { professionalId, timeSlotId } — book a specific professional's slot.
  */
 export async function POST(request: Request) {
   try {
@@ -30,24 +33,46 @@ export async function POST(request: Request) {
     }
 
     const body = (raw ?? {}) as Record<string, unknown>;
+    const intakeId = typeof body.intakeId === "string" ? body.intakeId : "";
     const professionalId =
       typeof body.professionalId === "string" ? body.professionalId : "";
     const timeSlotId =
       typeof body.timeSlotId === "string" ? body.timeSlotId : "";
 
-    if (!professionalId || !timeSlotId) {
+    if (!timeSlotId || (!intakeId && !professionalId)) {
       return NextResponse.json(
-        { error: "professionalId and timeSlotId are required." },
+        { error: "timeSlotId and one of intakeId or professionalId are required." },
         { status: 400 },
       );
     }
 
-    // Confirm the slot exists and belongs to the named professional before
-    // attempting to book (avoids mismatched professional/slot pairings).
-    const slot = await prisma.timeSlot.findUnique({
-      where: { id: timeSlotId },
-    });
-    if (!slot || slot.professionalId !== professionalId) {
+    // Resolve the expected professional id.
+    let expectedProfessionalId = professionalId;
+
+    if (intakeId) {
+      // Verify the intake belongs to this client and has a match.
+      const intake = await prisma.intake.findUnique({
+        where: { id: intakeId },
+        include: { match: true },
+      });
+      if (!intake || intake.clientProfileId !== clientProfile.id) {
+        return NextResponse.json(
+          { error: "Intake not found." },
+          { status: 404 },
+        );
+      }
+      if (!intake.match) {
+        return NextResponse.json(
+          { error: "This intake has not been matched yet." },
+          { status: 409 },
+        );
+      }
+      expectedProfessionalId = intake.match.matchedProfessionalId;
+    }
+
+    // Confirm the slot exists and belongs to the expected professional.
+    const slot = await prisma.timeSlot.findUnique({ where: { id: timeSlotId } });
+    if (!slot || slot.professionalId !== expectedProfessionalId) {
       return NextResponse.json(
         { error: "Time slot not found for that professional." },
         { status: 404 },
@@ -57,6 +82,7 @@ export async function POST(request: Request) {
     const appointment = await bookSlot({
       clientProfileId: clientProfile.id,
       timeSlotId,
+      intakeId: intakeId || null,
     });
 
     return NextResponse.json({ appointment }, { status: 201 });

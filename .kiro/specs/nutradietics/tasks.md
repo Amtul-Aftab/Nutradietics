@@ -182,10 +182,12 @@ Key cross-phase dependencies:
 
 > Connect the independently built pieces into one resumable client journey.
 
-- [ ] 10.1 Wire the intake wizard through all steps driven by `Intake.status`: Describe -> classify -> standard fields -> questions -> answers -> match -> slot picker -> confirm, each with in-progress indicators and retry-preserving-input on AI failure (Req 6.5, 8.6, 8.8, 9.6).
-- [ ] 10.2 Link booking to the intake: `POST /appointments` uses `intakeId`, sets intake status `BOOKED`, and creates the appointment tied to the matched professional (Req 11.2).
-- [ ] 10.3 Replace the temporary browse/book UI (Phase 4.4) with the AI match-result view: matched professional details + rationale + available slots (Req 9.4, 11.1).
+- [x] 10.1 Wire the intake wizard through all steps driven by `Intake.status`: Describe -> classify -> standard fields -> questions -> answers -> match -> slot picker -> confirm, each with in-progress indicators and retry-preserving-input on AI failure (Req 6.5, 8.6, 8.8, 9.6).
+- [x] 10.2 Link booking to the intake: `POST /appointments` uses `intakeId`, sets intake status `BOOKED`, and creates the appointment tied to the matched professional (Req 11.2).
+- [x] 10.3 Replace the temporary browse/book UI (Phase 4.4) with the AI match-result view: matched professional details + rationale + available slots (Req 9.4, 11.1).
 - [ ] 10.4 Manually verify the complete journey end-to-end: description -> classification -> type-specific fields -> follow-up questions -> match -> booking -> professional sees summary + history -> professional records diagnosis/plan -> entry appears in the client's medical history.
+
+  > Note: the four temporary `/api/ai-test/*` verification routes were removed in this phase. `/client/browse` now redirects to `/client/intake` (its final step is the AI match-result view). Task 10.4 is a manual browser walkthrough for the user to confirm.
 
 ### Phase 11: Deployment Setup
 
