@@ -162,8 +162,10 @@ model PatientSummary {
 
 model Appointment {
   id              String            @id @default(uuid())
-  intakeId        String            @unique
-  intake          Intake            @relation(fields: [intakeId], references: [id])
+  // Optional until Phase 10 wires booking to the AI intake flow. Direct
+  // (pre-intake) bookings in Phase 4 leave this null.
+  intakeId        String?           @unique
+  intake          Intake?           @relation(fields: [intakeId], references: [id])
   clientProfileId String
   clientProfile   ClientProfile     @relation(fields: [clientProfileId], references: [id])
   professionalId  String

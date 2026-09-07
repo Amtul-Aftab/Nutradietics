@@ -20,6 +20,7 @@ export default async function ProfessionalDashboardPage() {
         <Link href="/professional/profile">Edit profile</Link>
         <Link href="/professional/services">Manage services</Link>
         <Link href="/professional/availability">Manage availability</Link>
+        <Link href="/professional/schedule">View schedule</Link>
       </nav>
     </main>
   );

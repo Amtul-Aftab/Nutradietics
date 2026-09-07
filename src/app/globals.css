@@ -233,14 +233,110 @@ a {
   color: var(--color-primary-hover);
 }
 
-.slots__badge--booked {
-  background: #fdecea;
-  color: var(--color-danger-hover);
+.slots__badge--booked,
+.slots__badge--confirmed {
+  background: #e3f3ee;
+  color: var(--color-primary-hover);
+}
+
+.slots__badge--completed {
+  background: var(--color-surface);
+  color: var(--color-muted);
 }
 
 .slots__empty {
   color: var(--color-muted);
   font-size: 0.9rem;
+}
+
+/* --- Professional schedule --- */
+.schedule {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.schedule__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.schedule__client {
+  margin-left: auto;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+/* --- Client browse / book --- */
+.browse {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.browse__note {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  font-style: italic;
+}
+
+.browse__card {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.browse__card header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.browse__card h2 {
+  font-size: 1.1rem;
+}
+
+.browse__card h3 {
+  font-size: 0.9rem;
+  margin-top: var(--space-3);
+  margin-bottom: var(--space-1);
+}
+
+.browse__specialty {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.browse__bio {
+  margin-top: var(--space-2);
+  font-size: 0.9rem;
+}
+
+.browse__services {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: 0.9rem;
+}
+
+.browse__slots {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.browse__slots li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
 }
 
 /* Accessibility helper: visually hidden but available to screen readers */

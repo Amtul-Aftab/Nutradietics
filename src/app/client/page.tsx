@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { auth } from "@/auth";
 import { Role } from "@prisma/client";
 import { dashboardPathForRole } from "@/lib/routes";
@@ -14,6 +15,9 @@ export default async function ClientDashboardPage() {
     <main className="dashboard">
       <h1>Client dashboard</h1>
       <p>Welcome, {session.user.email}. Your intake flow will live here.</p>
+      <nav className="dashboard__links">
+        <Link href="/client/browse">Find a professional</Link>
+      </nav>
     </main>
   );
 }

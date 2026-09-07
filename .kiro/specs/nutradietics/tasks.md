@@ -49,13 +49,13 @@ Each task is scoped to be completable in a single sitting. Requirement reference
 
 > At the end of this phase the core marketplace works without any AI: a professional can be found by ID, their available slots viewed, and an appointment booked.
 
-- [ ] 4.1 Implement the transactional booking service: conditional `UPDATE time_slot ... WHERE status = 'AVAILABLE'` inside a Prisma transaction; create the `Appointment` and mark the slot booked; roll back to a 409 on conflict (Req 4.4, 11.2, 11.3).
-- [ ] 4.2 Build `POST /appointments` (body `{ professionalId | intakeId, timeSlotId }`) with ownership/role guards; return confirmation on success (Req 11.2, 11.4).
+- [x] 4.1 Implement the transactional booking service: conditional `UPDATE time_slot ... WHERE status = 'AVAILABLE'` inside a Prisma transaction; create the `Appointment` and mark the slot booked; roll back to a 409 on conflict (Req 4.4, 11.2, 11.3).
+- [x] 4.2 Build `POST /appointments` (body `{ professionalId | intakeId, timeSlotId }`) with ownership/role guards; return confirmation on success (Req 11.2, 11.4).
 
   > Note: at this phase, book directly against a professional; the `intakeId` linkage is added in Phase 10.
-- [ ] 4.3 Build `GET /professionals/me/schedule` and the professional schedule UI showing appointments against slots (Req 11.5).
-- [ ] 4.4 Build a temporary "browse professionals + view available slots + book" client UI to exercise the full booking flow end-to-end (this is replaced by the AI match result view in Phase 10).
-- [ ] 4.5 Manually verify the end-to-end core flow: sign up as professional, add profile/service/slots; sign up as client, book a slot; confirm double-booking is rejected.
+- [x] 4.3 Build `GET /professionals/me/schedule` and the professional schedule UI showing appointments against slots (Req 11.5).
+- [x] 4.4 Build a temporary "browse professionals + view available slots + book" client UI to exercise the full booking flow end-to-end (this is replaced by the AI match result view in Phase 10).
+- [x] 4.5 Manually verify the end-to-end core flow: sign up as professional, add profile/service/slots; sign up as client, book a slot; confirm double-booking is rejected.
 
 ---
 
