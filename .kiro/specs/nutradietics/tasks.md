@@ -120,8 +120,8 @@ Key cross-phase dependencies:
 
 ### Phase 7: Intake Foundation (Req 5)
 
-- [ ] 7.1 Build `POST /intakes` to create an intake from a plain-language description with minimum-length validation; set status `DESCRIBED` (Req 5.1, 5.2, 5.3).
-- [ ] 7.2 Build the intake-wizard shell UI driven by `Intake.status` (resumable), starting with the description step.
+- [x] 7.1 Build `POST /intakes` to create an intake from a plain-language description with minimum-length validation; set status `DESCRIBED` (Req 5.1, 5.2, 5.3).
+- [x] 7.2 Build the intake-wizard shell UI driven by `Intake.status` (resumable), starting with the description step.
 
 ### Phase 8: The Four AI Calls (each built and verified independently)
 
