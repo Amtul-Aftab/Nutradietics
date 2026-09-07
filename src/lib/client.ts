@@ -16,3 +16,16 @@ export async function requireClient() {
   }
   return { session, clientProfile };
 }
+
+/**
+ * Requires a CLIENT session and loads an intake the client owns.
+ * Throws AuthError(404) if the intake is missing or not theirs.
+ */
+export async function requireOwnedIntake(intakeId: string) {
+  const { session, clientProfile } = await requireClient();
+  const intake = await prisma.intake.findUnique({ where: { id: intakeId } });
+  if (!intake || intake.clientProfileId !== clientProfile.id) {
+    throw new AuthError(404, "Intake not found.");
+  }
+  return { session, clientProfile, intake };
+}

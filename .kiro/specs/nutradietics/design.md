@@ -348,8 +348,9 @@ All routes are Next.js route handlers under `app/api/**`. Auth required except s
 - `PUT /intakes/:id/standard-fields` — validates against type-specific schema (Req 7.4). → FIELDS_COLLECTED.
 - `POST /intakes/:id/questions` — triggers AI question generation (Req 8). → QUESTIONS_READY. Retryable.
 - `PUT /intakes/:id/answers` — persists answers (Req 8.7). → ANSWERED.
-- `POST /intakes/:id/match` — filters candidates, calls AI match + generates summary (Req 9, 10.1). → MATCHED or "no match" (Req 9.5). Retryable.
+- `POST /intakes/:id/match` — filters candidates, calls AI match (Req 9). → MATCHED or "no match" (Req 9.5). Retryable.
 - `GET /intakes/:id/match` — matched professional + rationale + available slots (Req 9.4, 11.1).
+- `POST /intakes/:id/summary` — generates and persists the AI patient summary from the intake (description + type + standard fields + answers) (Req 10.1). Retryable; best-effort (raw intake data remains available on failure, Req 10.5). Phase 9 triggers this at the match step so the summary is ready before booking.
 
 ### Booking (Req 11) — client role
 - `POST /appointments` — body `{ intakeId, timeSlotId }`. Transactionally re-checks slot availability; on conflict returns 409 and prompts re-selection (Req 11.3). Marks slot BOOKED and creates appointment (Req 11.2, 11.4). → intake BOOKED.

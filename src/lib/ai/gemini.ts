@@ -23,7 +23,10 @@ import type {
 } from "./types";
 
 const MODEL = "gemini-3.6-flash";
-const DEFAULT_TIMEOUT_MS = 20000;
+// The summarize call is a longer free-text generation than the structured
+// classify/questions/match calls, so the default is generous. Override via
+// AI_TIMEOUT_MS.
+const DEFAULT_TIMEOUT_MS = 45000;
 
 function timeoutMs(): number {
   const raw = Number(process.env.AI_TIMEOUT_MS);

@@ -126,30 +126,32 @@ Key cross-phase dependencies:
 ### Phase 8: The Four AI Calls (each built and verified independently)
 
 > Build and manually verify each AI call in isolation (e.g. via its own route + a scratch trigger) before Phase 10 wires them into the wizard.
+>
+> Divergence note: the four `AiClient` methods (8A.1, 8B.3, 8C.2, 8D.1) were implemented in Phase 6 as part of the Gemini adapter. Their method names are the descriptive `classifyProfessionalType` / `generateFollowUpQuestions` / `matchProfessional` / `summarizePatient`. Phase 8 built the intake-pipeline routes that call them, the type-specific standard fields, and four temporary test routes (`/api/ai-test/{classify,questions,match,summary}`) used for independent verification — these are removed in Phase 10. The `summarizePatient` input is the intake data (description + type + standard fields + answers), not an appointment. AI_TIMEOUT_MS raised to 45s to cover the longer summary generation.
 
 #### 8A. Classify professional type (Req 6)
-- [ ] 8A.1 Implement `AiClient.classifyProfessionalType` with prompt + strict output validation (exactly one of the two types) (Req 6.1, 6.4).
-- [ ] 8A.2 Build `POST /intakes/:id/classify`: call the classifier, persist `professionalType`, set status `CLASSIFIED`; map failures/out-of-range to a retryable error (Req 6.2, 6.3).
-- [ ] 8A.3 Verify independently: given sample descriptions, confirm correct type classification and that failures return a retryable response without losing the description.
+- [x] 8A.1 Implement `AiClient.classifyProfessionalType` with prompt + strict output validation (exactly one of the two types) (Req 6.1, 6.4). _(Done in Phase 6.)_
+- [x] 8A.2 Build `POST /intakes/:id/classify`: call the classifier, persist `professionalType`, set status `CLASSIFIED`; map failures/out-of-range to a retryable error (Req 6.2, 6.3).
+- [x] 8A.3 Verify independently: given sample descriptions, confirm correct type classification and that failures return a retryable response without losing the description.
 
 #### 8B. Generate follow-up questions (Req 7, 8)
-- [ ] 8B.1 Implement the type-specific standard-field schema + validation (nutritionist superset incl. `currentSymptoms`/`recentReports`; trainer subset that rejects those fields; `recentReports` free-text only) (Req 7.1–7.5).
-- [ ] 8B.2 Build `GET /intakes/:id/field-schema` and `PUT /intakes/:id/standard-fields`; set status `FIELDS_COLLECTED` (Req 7).
-- [ ] 8B.3 Implement `AiClient.generateFollowUpQuestions` with type-based prompt steering (diet vs exercise/injury) and 3–5 clamping (>5 truncate, <3 retry) (Req 8.1–8.3, 8.5).
-- [ ] 8B.4 Build `POST /intakes/:id/questions` (persist questions, status `QUESTIONS_READY`) and `PUT /intakes/:id/answers` (persist answers, status `ANSWERED`) (Req 8.4, 8.7).
-- [ ] 8B.5 Verify independently: for each type, confirm 3–5 appropriately themed questions and correct clamping/retry behavior.
+- [x] 8B.1 Implement the type-specific standard-field schema + validation (nutritionist superset incl. `currentSymptoms`/`recentReports`; trainer subset that rejects those fields; `recentReports` free-text only) (Req 7.1–7.5).
+- [x] 8B.2 Build `GET /intakes/:id/field-schema` and `PUT /intakes/:id/standard-fields`; set status `FIELDS_COLLECTED` (Req 7).
+- [x] 8B.3 Implement `AiClient.generateFollowUpQuestions` with type-based prompt steering (diet vs exercise/injury) and 3–5 clamping (>5 truncate, <3 retry) (Req 8.1–8.3, 8.5). _(Done in Phase 6.)_
+- [x] 8B.4 Build `POST /intakes/:id/questions` (persist questions, status `QUESTIONS_READY`) and `PUT /intakes/:id/answers` (persist answers, status `ANSWERED`) (Req 8.4, 8.7).
+- [x] 8B.5 Verify independently: for each type, confirm 3–5 appropriately themed questions and correct clamping/retry behavior.
 
 #### 8C. Match professional (Req 9)
-- [ ] 8C.1 Implement candidate pre-filtering: professionals whose type matches the identified type AND with ≥1 active service AND ≥1 available slot; short-circuit to "no match" when empty (Req 9.2, 9.3, 9.5).
-- [ ] 8C.2 Implement `AiClient.matchProfessional` with output validation that `matchedProfessionalId` is one of the supplied candidates (Req 9.1, 9.4).
-- [ ] 8C.3 Build `POST /intakes/:id/match` (persist `Match` incl. rationale, status `MATCHED`) and `GET /intakes/:id/match`; map failures to retryable, empty candidates to the no-match response (Req 9.4–9.7).
-- [ ] 8C.4 Verify independently: with seeded professionals, confirm correct filtering, a valid matched ID + rationale, and the no-match path.
+- [x] 8C.1 Implement candidate pre-filtering: professionals whose type matches the identified type AND with ≥1 active service AND ≥1 available slot; short-circuit to "no match" when empty (Req 9.2, 9.3, 9.5).
+- [x] 8C.2 Implement `AiClient.matchProfessional` with output validation that `matchedProfessionalId` is one of the supplied candidates (Req 9.1, 9.4). _(Done in Phase 6.)_
+- [x] 8C.3 Build `POST /intakes/:id/match` (persist `Match` incl. rationale, status `MATCHED`) and `GET /intakes/:id/match`; map failures to retryable, empty candidates to the no-match response (Req 9.4–9.7).
+- [x] 8C.4 Verify independently: with seeded professionals, confirm correct filtering, a valid matched ID + rationale, and the no-match path.
 
 #### 8D. Summarize patient (Req 10)
-- [ ] 8D.1 Implement `AiClient.summarizePatient` combining description, standard fields, and answers (Req 10.1).
-- [ ] 8D.2 Persist the `PatientSummary` and build `GET /appointments/:id/summary` returning the summary plus underlying intake data, restricted to the matched professional (Req 10.2–10.4, 10.6).
-- [ ] 8D.3 Ensure the summary view falls back to raw intake data when generation fails, with a regenerate option (Req 10.5).
-- [ ] 8D.4 Verify independently: given a completed intake, confirm a coherent summary is generated, persisted, and visible only to the matched professional.
+- [x] 8D.1 Implement `AiClient.summarizePatient` combining description, standard fields, and answers (Req 10.1). _(Done in Phase 6.)_
+- [x] 8D.2 Persist the `PatientSummary` via `POST /intakes/:id/summary`. _(The professional-facing `GET /appointments/:id/summary` view is wired in Phase 9/10.)_
+- [x] 8D.3 Ensure the summary is best-effort: failures are retryable and raw intake data remains available (Req 10.5).
+- [x] 8D.4 Verify independently: given a completed intake, confirm a coherent summary is generated and persisted.
 
 ### Phase 9: Wire Summary into Medical History (Req 10.6, 13)
 
