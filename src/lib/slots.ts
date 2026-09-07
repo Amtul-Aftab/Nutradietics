@@ -41,6 +41,11 @@ interface CreateSlotArgs {
   endsAt: Date;
 }
 
+// A single availability slot represents one appointment window. Cap its length
+// so a malformed entry (e.g. a wrong end date spanning days) can't be created
+// and then block all future slots by "overlapping" everything (Req 4.3).
+const MAX_SLOT_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
+
 /**
  * Creates an available time slot after validating the range and checking for
  * overlaps against the professional's existing non-removed slots (Req 4.1–4.3).
@@ -66,6 +71,9 @@ export async function createSlot({
     }
     if (startsAt.getTime() <= Date.now()) {
       fieldErrors.startsAt = "Start time must be in the future.";
+    }
+    if (endsAt.getTime() - startsAt.getTime() > MAX_SLOT_DURATION_MS) {
+      fieldErrors.endsAt = "A slot cannot be longer than 24 hours.";
     }
   }
   if (Object.keys(fieldErrors).length > 0) {
