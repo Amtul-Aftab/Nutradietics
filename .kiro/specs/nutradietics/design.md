@@ -76,6 +76,17 @@ Authentication uses **Auth.js (NextAuth)** — a well-documented, Next.js-native
 
 ---
 
+## Components and Interfaces
+
+The single Next.js app is organized into these components; their detailed contracts appear in the sections that follow (Data Models, AI Integration, API Surface).
+
+- **UI components (React)**: the client intake wizard, professional dashboard (profile, services, availability, schedule, appointment detail), client browse/history views, and shared UI primitives. See `## Frontend (React) Structure`.
+- **Route handlers (`app/api/**`)**: the HTTP interface for auth, professional profile/services/slots, the intake pipeline, appointments, and medical history. Each validates input, enforces auth/role, and returns typed JSON. See `## API Surface`.
+- **Service layer (`src/lib`)**: business logic invoked by route handlers — `booking`, `matching`, `slots`, `summary`, `medical-history`, plus validation modules. Interfaces are ordinary typed functions.
+- **`AiClient` interface**: the four AI operations (`classifyProfessionalType`, `generateFollowUpQuestions`, `matchProfessional`, `summarizePatient`), implemented by the Gemini adapter with structured JSON output and a shared resilience wrapper. See `## AI Integration`.
+- **Auth component (Auth.js)**: session/JWT handling and the edge-safe `authConfig` used by the proxy for route protection. See `## Authentication & Authorization`.
+- **Data access (Prisma)**: the repository layer over PostgreSQL; the schema and relations are defined in `## Data Models`.
+
 ## Intake State Machine
 
 The intake is the backbone of the client flow. It is modeled as a single `Intake` record with an explicit `status` so the UI can resume and each AI step is idempotent-ish and retryable (Req 6.3, 8.6, 9.6).
@@ -108,7 +119,7 @@ Notes:
 
 ---
 
-## Data Model
+## Data Models
 
 Relational schema (PostgreSQL). Types shown in Prisma-like syntax for clarity.
 
@@ -444,6 +455,29 @@ AI-dependent endpoints return a distinct retryable error shape so the frontend c
 - All AI-produced and client-produced free text is rendered as inert text to avoid injection (Req 14.4).
 
 ---
+
+## Correctness Properties
+
+Key invariants the implementation must uphold:
+
+- **No double-booking.** A time slot can back at most one active appointment. Enforced by the conditional `UPDATE ... WHERE status = 'AVAILABLE'` inside a transaction plus the unique constraint on `Appointment.timeSlotId` (Req 4.4, 11.3).
+- **No overlapping slots.** A professional's non-removed slots never overlap; enforced by the application-level overlap check on create (Req 4.2).
+- **Type-consistent matching.** Match candidates are always of the identified professional type and have at least one active service and one available future slot; the AI can only return an id from the supplied candidate set (Req 9.2, 9.3, 9.4).
+- **Booked slots are immutable to removal.** A slot in `BOOKED` state cannot be removed (Req 4.5).
+- **Medical-history access control.** History is readable only by the owning client or a professional with a booked appointment for that client (Req 13.5).
+- **Session-record authorship.** Only the professional who authored a session record may edit it (Req 12.6).
+- **AI output is validated.** Every AI response is schema-validated before use; malformed/timed-out/out-of-range responses become retryable errors and never corrupt persisted state (Req 14.2, 14.3).
+- **Summary is non-blocking.** A patient-summary generation failure never blocks or rolls back a match (Req 10.5).
+- **Intake progression is monotonic.** The intake advances through its status states in order; each AI step is retryable without losing prior input.
+
+## Testing Strategy
+
+This is a time-constrained build; automated test suites are out of scope. Correctness is verified through:
+
+- **Type checking + build.** `npm run build` runs the TypeScript compiler across the whole app; a green build is a gate for every change.
+- **Per-phase functional verification against real services.** Each phase's core logic is exercised against the live Supabase database and the live Gemini API via short throwaway scripts and temporary test routes (e.g. `/api/ai-test/*`). Verified behaviors include: signup/role persistence, duplicate-email handling, slot overlap/boundary and booked-removal rules, the concurrent double-booking race (one success, one 409, one appointment), session-record author guard, medical-history aggregation and access matrix, intake validation, and all four AI calls returning valid structured output.
+- **Manual end-to-end walkthroughs.** Full user journeys are exercised in the browser (sign up, profile/services/slots, booking, intake-to-match, post-appointment records).
+- **Temporary diagnostics are removed** once a capability is confirmed (the `/api/ai-test/*` routes are removed in Phase 10).
 
 ## Requirements Traceability
 

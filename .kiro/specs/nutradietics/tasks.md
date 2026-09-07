@@ -38,23 +38,42 @@ Phase 6 (AI Adapter Foundation)
 Phase 7 (Intake Foundation)
    │
    ▼
-Phase 8 (The Four AI Calls: 8A, 8B, 8C, 8D — each built/verified independently)
+Phase 8 (The Four AI Calls: 8A, 8B, 8C, 8D - each built/verified independently)
    │
    ▼
 Phase 9 (Wire Summary into Medical History)  ── depends on Phase 5 + Phase 8D
    │
    ▼
-Phase 10 (Full Intake Flow Wiring)  ── depends on Phases 6–9; replaces Phase 4.4 UI
+Phase 10 (Full Intake Flow Wiring)  ── depends on Phases 6-9; replaces Phase 4.4 UI
    │
    ▼
 Phase 11 (Deployment Setup)
+```
+
+```json
+{
+  "waves": [
+    { "phase": 0, "tasks": ["0.1", "0.2", "0.3", "0.4", "0.5"] },
+    { "phase": 1, "tasks": ["1.1", "1.2", "1.3", "1.4", "1.5", "1.6"] },
+    { "phase": 2, "tasks": ["2.1", "2.2", "2.3", "2.4", "2.5"] },
+    { "phase": 3, "tasks": ["3.1", "3.2", "3.3"] },
+    { "phase": 4, "tasks": ["4.1", "4.2", "4.3", "4.4", "4.5"] },
+    { "phase": 5, "tasks": ["5.1", "5.2", "5.3", "5.4", "5.5"] },
+    { "phase": 6, "tasks": ["6.1", "6.2", "6.3", "6.4"] },
+    { "phase": 7, "tasks": ["7.1", "7.2"] },
+    { "phase": 8, "tasks": ["8.1", "8.2", "8.3", "8.4", "8.5", "8.6", "8.7", "8.8", "8.9", "8.10", "8.11", "8.12", "8.13", "8.14", "8.15", "8.16"] },
+    { "phase": 9, "tasks": ["9.1"] },
+    { "phase": 10, "tasks": ["10.1", "10.2", "10.3", "10.4"] },
+    { "phase": 11, "tasks": ["11.1", "11.2", "11.3", "11.4"] }
+  ]
+}
 ```
 
 Key cross-phase dependencies:
 - Phase 5 depends on Phase 4 (session records attach to appointments).
 - Phase 8 depends on Phase 6 (AI adapter) and Phase 7 (intake foundation).
 - Phase 9 depends on Phase 5 (medical-history timeline) and Phase 8D (patient summary).
-- Phase 10 depends on Phases 6–9 and replaces the temporary browse/book UI from Phase 4.4.
+- Phase 10 depends on Phases 6-9 and replaces the temporary browse/book UI from Phase 4.4.
 
 ## Tasks
 
@@ -77,9 +96,9 @@ Key cross-phase dependencies:
 
 ### Phase 2: Professional Profile & Services (Req 2, 3)
 
-- [x] 2.1 Build `PUT /professionals/me/profile` to create/update name, professional type, specialty, bio; validate required fields and constrain type to the two allowed values (Req 2.1–2.4).
+- [x] 2.1 Build `PUT /professionals/me/profile` to create/update name, professional type, specialty, bio; validate required fields and constrain type to the two allowed values (Req 2.1-2.4).
 - [x] 2.2 Build the professional profile editor UI, including the professional-type selector.
-- [x] 2.3 Build service CRUD routes: `POST/PUT/DELETE /professionals/me/services`; validate price as a non-negative integer (cents) and denormalize the professional's type onto each service (Req 3.1–3.3).
+- [x] 2.3 Build service CRUD routes: `POST/PUT/DELETE /professionals/me/services`; validate price as a non-negative integer (cents) and denormalize the professional's type onto each service (Req 3.1-3.3).
 - [x] 2.4 Build `GET /professionals/me/services` and the dashboard listing of active services (Req 3.4).
 - [x] 2.5 Build the services management UI (create/edit/remove) with price validation feedback.
 
@@ -103,7 +122,7 @@ Key cross-phase dependencies:
 
 ### Phase 5: Session Records & Medical History (Req 12, 13)
 
-- [x] 5.1 Build `POST/PUT /appointments/:id/session-record`: professional-entered diagnosis + plan, required-field validation, author-only edit guard (Req 12.1–12.6).
+- [x] 5.1 Build `POST/PUT /appointments/:id/session-record`: professional-entered diagnosis + plan, required-field validation, author-only edit guard (Req 12.1-12.6).
 - [x] 5.2 Build the post-appointment session-record form UI on the professional's appointment view.
 - [x] 5.3 Implement the medical-history read-model service that aggregates a client's intakes, patient summaries, and session records in chronological order (Req 13.1, 13.3, 13.4).
 - [x] 5.4 Build `GET /clients/:clientId/medical-history` with access control (self, or a professional with a booked appointment with that client) and `GET /clients/me/medical-history` (Req 13.2, 13.5, 13.6).
@@ -114,7 +133,7 @@ Key cross-phase dependencies:
 ### Phase 6: AI Adapter Foundation (Req 14)
 
 - [x] 6.1 Define the `AiClient` interface with the four method signatures (classify, generateQuestions, match, summarize) and their input/output types.
-- [x] 6.2 Implement the provider adapter reading the API key from server-side env only, plus the shared resilience wrapper: configurable timeout → abort, JSON parse, and schema validation, throwing a typed `AiUnavailableError` (Req 14.1, 14.2, 14.3).
+- [x] 6.2 Implement the provider adapter reading the API key from server-side env only, plus the shared resilience wrapper: configurable timeout -> abort, JSON parse, and schema validation, throwing a typed `AiUnavailableError` (Req 14.1, 14.2, 14.3).
 - [x] 6.3 Add JSON-schema validators for each of the four response shapes and a shared mapping from `AiUnavailableError` to the retryable 503 error response (Req 14.3).
 - [x] 6.4 Add a data-minimization helper so each AI call sends only task-necessary fields (Req 14.5), and ensure stored AI text is treated as inert on render (Req 14.4).
 
@@ -127,46 +146,46 @@ Key cross-phase dependencies:
 
 > Build and manually verify each AI call in isolation (e.g. via its own route + a scratch trigger) before Phase 10 wires them into the wizard.
 >
-> Divergence note: the four `AiClient` methods (8A.1, 8B.3, 8C.2, 8D.1) were implemented in Phase 6 as part of the Gemini adapter. Their method names are the descriptive `classifyProfessionalType` / `generateFollowUpQuestions` / `matchProfessional` / `summarizePatient`. Phase 8 built the intake-pipeline routes that call them, the type-specific standard fields, and four temporary test routes (`/api/ai-test/{classify,questions,match,summary}`) used for independent verification — these are removed in Phase 10. The `summarizePatient` input is the intake data (description + type + standard fields + answers), not an appointment. AI_TIMEOUT_MS raised to 45s to cover the longer summary generation.
+> Divergence note: the four `AiClient` methods (8.1, 8.6, 8.10, 8.13) were implemented in Phase 6 as part of the Gemini adapter. Their method names are the descriptive `classifyProfessionalType` / `generateFollowUpQuestions` / `matchProfessional` / `summarizePatient`. Phase 8 built the intake-pipeline routes that call them, the type-specific standard fields, and four temporary test routes (`/api/ai-test/{classify,questions,match,summary}`) used for independent verification - these are removed in Phase 10. The `summarizePatient` input is the intake data (description + type + standard fields + answers), not an appointment. AI_TIMEOUT_MS raised to 45s to cover the longer summary generation.
 
 #### 8A. Classify professional type (Req 6)
-- [x] 8A.1 Implement `AiClient.classifyProfessionalType` with prompt + strict output validation (exactly one of the two types) (Req 6.1, 6.4). _(Done in Phase 6.)_
-- [x] 8A.2 Build `POST /intakes/:id/classify`: call the classifier, persist `professionalType`, set status `CLASSIFIED`; map failures/out-of-range to a retryable error (Req 6.2, 6.3).
-- [x] 8A.3 Verify independently: given sample descriptions, confirm correct type classification and that failures return a retryable response without losing the description.
+- [x] 8.1 Implement `AiClient.classifyProfessionalType` with prompt + strict output validation (exactly one of the two types) (Req 6.1, 6.4). _(Done in Phase 6.)_
+- [x] 8.2 Build `POST /intakes/:id/classify`: call the classifier, persist `professionalType`, set status `CLASSIFIED`; map failures/out-of-range to a retryable error (Req 6.2, 6.3).
+- [x] 8.3 Verify independently: given sample descriptions, confirm correct type classification and that failures return a retryable response without losing the description.
 
 #### 8B. Generate follow-up questions (Req 7, 8)
-- [x] 8B.1 Implement the type-specific standard-field schema + validation (nutritionist superset incl. `currentSymptoms`/`recentReports`; trainer subset that rejects those fields; `recentReports` free-text only) (Req 7.1–7.5).
-- [x] 8B.2 Build `GET /intakes/:id/field-schema` and `PUT /intakes/:id/standard-fields`; set status `FIELDS_COLLECTED` (Req 7).
-- [x] 8B.3 Implement `AiClient.generateFollowUpQuestions` with type-based prompt steering (diet vs exercise/injury) and 3–5 clamping (>5 truncate, <3 retry) (Req 8.1–8.3, 8.5). _(Done in Phase 6.)_
-- [x] 8B.4 Build `POST /intakes/:id/questions` (persist questions, status `QUESTIONS_READY`) and `PUT /intakes/:id/answers` (persist answers, status `ANSWERED`) (Req 8.4, 8.7).
-- [x] 8B.5 Verify independently: for each type, confirm 3–5 appropriately themed questions and correct clamping/retry behavior.
+- [x] 8.4 Implement the type-specific standard-field schema + validation (nutritionist superset incl. `currentSymptoms`/`recentReports`; trainer subset that rejects those fields; `recentReports` free-text only) (Req 7.1-7.5).
+- [x] 8.5 Build `GET /intakes/:id/field-schema` and `PUT /intakes/:id/standard-fields`; set status `FIELDS_COLLECTED` (Req 7).
+- [x] 8.6 Implement `AiClient.generateFollowUpQuestions` with type-based prompt steering (diet vs exercise/injury) and 3-5 clamping (>5 truncate, <3 retry) (Req 8.1-8.3, 8.5). _(Done in Phase 6.)_
+- [x] 8.7 Build `POST /intakes/:id/questions` (persist questions, status `QUESTIONS_READY`) and `PUT /intakes/:id/answers` (persist answers, status `ANSWERED`) (Req 8.4, 8.7).
+- [x] 8.8 Verify independently: for each type, confirm 3-5 appropriately themed questions and correct clamping/retry behavior.
 
 #### 8C. Match professional (Req 9)
-- [x] 8C.1 Implement candidate pre-filtering: professionals whose type matches the identified type AND with ≥1 active service AND ≥1 available slot; short-circuit to "no match" when empty (Req 9.2, 9.3, 9.5).
-- [x] 8C.2 Implement `AiClient.matchProfessional` with output validation that `matchedProfessionalId` is one of the supplied candidates (Req 9.1, 9.4). _(Done in Phase 6.)_
-- [x] 8C.3 Build `POST /intakes/:id/match` (persist `Match` incl. rationale, status `MATCHED`) and `GET /intakes/:id/match`; map failures to retryable, empty candidates to the no-match response (Req 9.4–9.7).
-- [x] 8C.4 Verify independently: with seeded professionals, confirm correct filtering, a valid matched ID + rationale, and the no-match path.
+- [x] 8.9 Implement candidate pre-filtering: professionals whose type matches the identified type AND with ≥1 active service AND ≥1 available slot; short-circuit to "no match" when empty (Req 9.2, 9.3, 9.5).
+- [x] 8.10 Implement `AiClient.matchProfessional` with output validation that `matchedProfessionalId` is one of the supplied candidates (Req 9.1, 9.4). _(Done in Phase 6.)_
+- [x] 8.11 Build `POST /intakes/:id/match` (persist `Match` incl. rationale, status `MATCHED`) and `GET /intakes/:id/match`; map failures to retryable, empty candidates to the no-match response (Req 9.4-9.7).
+- [x] 8.12 Verify independently: with seeded professionals, confirm correct filtering, a valid matched ID + rationale, and the no-match path.
 
 #### 8D. Summarize patient (Req 10)
-- [x] 8D.1 Implement `AiClient.summarizePatient` combining description, standard fields, and answers (Req 10.1). _(Done in Phase 6.)_
-- [x] 8D.2 Persist the `PatientSummary` via `POST /intakes/:id/summary`. _(The professional-facing `GET /appointments/:id/summary` view is wired in Phase 9/10.)_
-- [x] 8D.3 Ensure the summary is best-effort: failures are retryable and raw intake data remains available (Req 10.5).
-- [x] 8D.4 Verify independently: given a completed intake, confirm a coherent summary is generated and persisted.
+- [x] 8.13 Implement `AiClient.summarizePatient` combining description, standard fields, and answers (Req 10.1). _(Done in Phase 6.)_
+- [x] 8.14 Persist the `PatientSummary` via `POST /intakes/:id/summary`. _(The professional-facing `GET /appointments/:id/summary` view is wired in Phase 9/10.)_
+- [x] 8.15 Ensure the summary is best-effort: failures are retryable and raw intake data remains available (Req 10.5).
+- [x] 8.16 Verify independently: given a completed intake, confirm a coherent summary is generated and persisted.
 
 ### Phase 9: Wire Summary into Medical History (Req 10.6, 13)
 
-- [x] 9.1 Generate the patient summary at the match step (`ANSWERED → MATCHED`) so it is ready before booking, and confirm summaries now surface in the medical-history timeline from Phase 5 (Req 10.1, 10.6, 13.3).
+- [x] 9.1 Generate the patient summary at the match step (`ANSWERED -> MATCHED`) so it is ready before booking, and confirm summaries now surface in the medical-history timeline from Phase 5 (Req 10.1, 10.6, 13.3).
 
-  > Implementation: `generatePatientSummary(intakeId)` in `src/lib/summary.ts` is invoked best-effort after the match transaction commits — a summary failure is logged and does not block the match (Req 10.5); the response includes `summaryGenerated`. The standalone `POST /intakes/:id/summary` route reuses the same function for explicit regeneration. Summaries surface automatically in the professional's medical-history view via the Phase 5 `getMedicalHistory` read-model (SUMMARY entries).
+  > Implementation: `generatePatientSummary(intakeId)` in `src/lib/summary.ts` is invoked best-effort after the match transaction commits - a summary failure is logged and does not block the match (Req 10.5); the response includes `summaryGenerated`. The standalone `POST /intakes/:id/summary` route reuses the same function for explicit regeneration. Summaries surface automatically in the professional's medical-history view via the Phase 5 `getMedicalHistory` read-model (SUMMARY entries).
 
-### Phase 10: Full Intake Flow Wiring (Req 5–11)
+### Phase 10: Full Intake Flow Wiring (Req 5-11)
 
 > Connect the independently built pieces into one resumable client journey.
 
-- [ ] 10.1 Wire the intake wizard through all steps driven by `Intake.status`: Describe → classify → standard fields → questions → answers → match → slot picker → confirm, each with in-progress indicators and retry-preserving-input on AI failure (Req 6.5, 8.6, 8.8, 9.6).
+- [ ] 10.1 Wire the intake wizard through all steps driven by `Intake.status`: Describe -> classify -> standard fields -> questions -> answers -> match -> slot picker -> confirm, each with in-progress indicators and retry-preserving-input on AI failure (Req 6.5, 8.6, 8.8, 9.6).
 - [ ] 10.2 Link booking to the intake: `POST /appointments` uses `intakeId`, sets intake status `BOOKED`, and creates the appointment tied to the matched professional (Req 11.2).
 - [ ] 10.3 Replace the temporary browse/book UI (Phase 4.4) with the AI match-result view: matched professional details + rationale + available slots (Req 9.4, 11.1).
-- [ ] 10.4 Manually verify the complete journey end-to-end: description → classification → type-specific fields → follow-up questions → match → booking → professional sees summary + history → professional records diagnosis/plan → entry appears in the client's medical history.
+- [ ] 10.4 Manually verify the complete journey end-to-end: description -> classification -> type-specific fields -> follow-up questions -> match -> booking -> professional sees summary + history -> professional records diagnosis/plan -> entry appears in the client's medical history.
 
 ### Phase 11: Deployment Setup
 
@@ -177,7 +196,7 @@ Key cross-phase dependencies:
 
 ## Notes
 
-- **Sequencing rationale.** The core marketplace (Phases 0–5) is built and verified end-to-end before any AI work begins. The four AI calls (Phase 8) are each implemented and verified in isolation before Phase 10 wires them into a single resumable client journey.
+- **Sequencing rationale.** The core marketplace (Phases 0-5) is built and verified end-to-end before any AI work begins. The four AI calls (Phase 8) are each implemented and verified in isolation before Phase 10 wires them into a single resumable client journey.
 - **Temporary scaffolding.** The browse/book client UI from task 4.4 is intentionally temporary; task 10.3 replaces it with the AI match-result view.
 - **Schema evolution.** `Appointment.intakeId` was made nullable during Phase 4 so direct (pre-intake) bookings work before the intake flow exists; task 10.2 wires the `intakeId` linkage.
 - **AI safety.** All AI calls run server-side only, with keys never exposed to the client, timeouts, and response-schema validation (Phase 6, Req 14).
