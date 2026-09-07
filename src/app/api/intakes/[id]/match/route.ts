@@ -6,6 +6,7 @@ import { requireOwnedIntake } from "@/lib/client";
 import { getMatchCandidates } from "@/lib/matching";
 import { geminiClient } from "@/lib/ai/gemini";
 import { aiErrorResponse } from "@/lib/ai/errors";
+import { generatePatientSummary } from "@/lib/summary";
 
 export const runtime = "nodejs";
 
@@ -74,7 +75,23 @@ export async function POST(
         return created;
       });
 
-      return NextResponse.json({ match, status: IntakeStatus.MATCHED });
+      // Generate the patient summary at the match step so it is ready before
+      // booking (Req 10.1, 10.6). Best-effort: a summary failure must NOT block
+      // the match (Req 10.5) — the professional still sees the raw intake data,
+      // and the summary can be regenerated later.
+      let summaryGenerated = true;
+      try {
+        await generatePatientSummary(intake.id);
+      } catch (summaryError) {
+        summaryGenerated = false;
+        console.error("Patient summary generation failed (non-blocking):", summaryError);
+      }
+
+      return NextResponse.json({
+        match,
+        status: IntakeStatus.MATCHED,
+        summaryGenerated,
+      });
     } catch (aiError) {
       return aiErrorResponse(aiError);
     }

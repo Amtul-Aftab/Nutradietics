@@ -155,7 +155,9 @@ Key cross-phase dependencies:
 
 ### Phase 9: Wire Summary into Medical History (Req 10.6, 13)
 
-- [ ] 9.1 Generate the patient summary at the match step (`ANSWERED → MATCHED`) so it is ready before booking, and confirm summaries now surface in the medical-history timeline from Phase 5 (Req 10.1, 10.6, 13.3).
+- [x] 9.1 Generate the patient summary at the match step (`ANSWERED → MATCHED`) so it is ready before booking, and confirm summaries now surface in the medical-history timeline from Phase 5 (Req 10.1, 10.6, 13.3).
+
+  > Implementation: `generatePatientSummary(intakeId)` in `src/lib/summary.ts` is invoked best-effort after the match transaction commits — a summary failure is logged and does not block the match (Req 10.5); the response includes `summaryGenerated`. The standalone `POST /intakes/:id/summary` route reuses the same function for explicit regeneration. Summaries surface automatically in the professional's medical-history view via the Phase 5 `getMedicalHistory` read-model (SUMMARY entries).
 
 ### Phase 10: Full Intake Flow Wiring (Req 5–11)
 
