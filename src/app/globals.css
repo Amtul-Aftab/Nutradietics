@@ -485,6 +485,23 @@ a {
   text-align: center;
 }
 
+/* Cross-type suggestion nudge */
+.cross-suggest {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: #eef2fb;
+  border: 1px solid #cdd8f0;
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cross-suggest__msg {
+  font-size: 0.9rem;
+  color: #33468c;
+}
+
 /* Accessibility helper: visually hidden but available to screen readers */
 .sr-only {
   position: absolute;

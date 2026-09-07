@@ -142,6 +142,7 @@ The AI-driven professional-type classification, follow-up question generation, p
 5. IF no professional meets the matching criteria THEN the system SHALL inform the client that no match is currently available.
 6. IF the AI matching call fails, times out, or returns an unusable response THEN the system SHALL surface a clear error and allow the client to retry.
 7. WHEN matching completes THEN the system SHALL persist the match result and its association with the client's intake.
+8. WHERE the client's description suggests a goal that commonly benefits from both nutrition and fitness support (e.g. weight loss, energy, general fitness) THEN the system MAY show, on the match-result and confirmation views, a supportive suggestion to also get matched with the other professional type, with an action that starts a new independent intake. This is a UI-only suggestion: it does not change the single-type classification (Req 6.1) or the data model, since clients can already run multiple independent intakes.
 
 ---
 

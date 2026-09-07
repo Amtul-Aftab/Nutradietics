@@ -6,9 +6,14 @@ import { prisma } from "@/lib/prisma";
 import { dashboardPathForRole } from "@/lib/routes";
 import { stepForStatus } from "@/lib/intake-steps";
 import { fieldSpecsForType } from "@/lib/standard-fields";
+import { getCrossTypeSuggestion } from "@/lib/cross-type-suggestion";
 import { IntakeWizard, type WizardData } from "./IntakeWizard";
 
-export default async function IntakePage() {
+export default async function IntakePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ fresh?: string }>;
+}) {
   const session = await auth();
   if (!session?.user) redirect("/signin");
   if (session.user.role !== Role.CLIENT) {
@@ -20,18 +25,25 @@ export default async function IntakePage() {
   });
   if (!clientProfile) redirect("/signin");
 
+  // `?fresh=1` (from the cross-type suggestion) forces a brand-new intake
+  // instead of resuming the latest in-progress one (Req 10.7).
+  const { fresh } = await searchParams;
+  const startFresh = fresh === "1";
+
   // Resume the most recent intake that isn't fully booked; otherwise start new.
-  const intake = await prisma.intake.findFirst({
-    where: {
-      clientProfileId: clientProfile.id,
-      status: { not: IntakeStatus.BOOKED },
-    },
-    orderBy: { createdAt: "desc" },
-    include: {
-      questions: { orderBy: { order: "asc" } },
-      match: true,
-    },
-  });
+  const intake = startFresh
+    ? null
+    : await prisma.intake.findFirst({
+        where: {
+          clientProfileId: clientProfile.id,
+          status: { not: IntakeStatus.BOOKED },
+        },
+        orderBy: { createdAt: "desc" },
+        include: {
+          questions: { orderBy: { order: "asc" } },
+          match: true,
+        },
+      });
 
   const step = stepForStatus(intake?.status ?? null);
 
@@ -68,6 +80,10 @@ export default async function IntakePage() {
       },
     });
     if (professional) {
+      const suggestion = getCrossTypeSuggestion(
+        intake.description,
+        professional.type,
+      );
       data.match = {
         professionalId: professional.id,
         name: professional.name,
@@ -80,6 +96,12 @@ export default async function IntakePage() {
           startsAt: s.startsAt.toISOString(),
           endsAt: s.endsAt.toISOString(),
         })),
+        suggestion: suggestion
+          ? {
+              message: suggestion.message,
+              otherTypeLabel: suggestion.otherTypeLabel,
+            }
+          : null,
       };
     }
   }

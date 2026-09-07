@@ -9,6 +9,7 @@ import {
   type IntakeStep,
 } from "@/lib/intake-steps";
 import type { FieldSpec } from "@/lib/standard-fields";
+import { CrossTypeSuggestion } from "./CrossTypeSuggestion";
 
 interface QuestionData {
   id: string;
@@ -24,6 +25,7 @@ interface MatchData {
   bio: string | null;
   rationale: string;
   slots: { id: string; startsAt: string; endsAt: string }[];
+  suggestion: { message: string; otherTypeLabel: string } | null;
 }
 
 export interface WizardData {
@@ -450,6 +452,12 @@ function BookStep({ router, data }: StepProps) {
         <p className="form-saved">
           You&apos;re booked with {m.name}. See your dashboard for details.
         </p>
+        {m.suggestion && (
+          <CrossTypeSuggestion
+            message={m.suggestion.message}
+            otherTypeLabel={m.suggestion.otherTypeLabel}
+          />
+        )}
       </div>
     );
   }
@@ -493,6 +501,13 @@ function BookStep({ router, data }: StepProps) {
           </ul>
         )}
       </article>
+
+      {m.suggestion && (
+        <CrossTypeSuggestion
+          message={m.suggestion.message}
+          otherTypeLabel={m.suggestion.otherTypeLabel}
+        />
+      )}
     </div>
   );
 }
