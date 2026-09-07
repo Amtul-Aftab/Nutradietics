@@ -113,10 +113,10 @@ Key cross-phase dependencies:
 
 ### Phase 6: AI Adapter Foundation (Req 14)
 
-- [ ] 6.1 Define the `AiClient` interface with the four method signatures (classify, generateQuestions, match, summarize) and their input/output types.
-- [ ] 6.2 Implement the provider adapter reading the API key from server-side env only, plus the shared resilience wrapper: configurable timeout → abort, JSON parse, and schema validation, throwing a typed `AiUnavailableError` (Req 14.1, 14.2, 14.3).
-- [ ] 6.3 Add JSON-schema validators for each of the four response shapes and a shared mapping from `AiUnavailableError` to the retryable 503 error response (Req 14.3).
-- [ ] 6.4 Add a data-minimization helper so each AI call sends only task-necessary fields (Req 14.5), and ensure stored AI text is treated as inert on render (Req 14.4).
+- [x] 6.1 Define the `AiClient` interface with the four method signatures (classify, generateQuestions, match, summarize) and their input/output types.
+- [x] 6.2 Implement the provider adapter reading the API key from server-side env only, plus the shared resilience wrapper: configurable timeout → abort, JSON parse, and schema validation, throwing a typed `AiUnavailableError` (Req 14.1, 14.2, 14.3).
+- [x] 6.3 Add JSON-schema validators for each of the four response shapes and a shared mapping from `AiUnavailableError` to the retryable 503 error response (Req 14.3).
+- [x] 6.4 Add a data-minimization helper so each AI call sends only task-necessary fields (Req 14.5), and ensure stored AI text is treated as inert on render (Req 14.4).
 
 ### Phase 7: Intake Foundation (Req 5)
 
