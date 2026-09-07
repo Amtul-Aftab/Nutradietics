@@ -54,10 +54,15 @@ export default async function SchedulePage() {
         <ul className="schedule">
           {appointments.map((a) => (
             <li key={a.id} className="schedule__item">
-              <span>{formatRange(a.timeSlot.startsAt, a.timeSlot.endsAt)}</span>
-              <span className="schedule__client">
-                {a.clientProfile.name ?? a.clientProfile.user.email}
-              </span>
+              <Link
+                href={`/professional/appointments/${a.id}`}
+                className="schedule__link"
+              >
+                <span>{formatRange(a.timeSlot.startsAt, a.timeSlot.endsAt)}</span>
+                <span className="schedule__client">
+                  {a.clientProfile.name ?? a.clientProfile.user.email}
+                </span>
+              </Link>
               <span
                 className={`slots__badge slots__badge--${a.status.toLowerCase()}`}
               >

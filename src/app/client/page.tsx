@@ -17,6 +17,7 @@ export default async function ClientDashboardPage() {
       <p>Welcome, {session.user.email}. Your intake flow will live here.</p>
       <nav className="dashboard__links">
         <Link href="/client/browse">Find a professional</Link>
+        <Link href="/client/history">Medical history</Link>
       </nav>
     </main>
   );

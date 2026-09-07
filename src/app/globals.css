@@ -339,6 +339,97 @@ a {
   gap: var(--space-4);
 }
 
+/* --- Appointment detail --- */
+.appointment__meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+}
+
+.appointment__hint {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  margin-bottom: var(--space-3);
+}
+
+.schedule__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex: 1;
+}
+
+.schedule__link:hover {
+  text-decoration: underline;
+}
+
+/* --- Medical history timeline --- */
+.history {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.history__item {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.history__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.history__title {
+  font-size: 0.95rem;
+}
+
+.history__when {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+.history__details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.history__detail dt {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.history__detail dd {
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+}
+
+.slots__badge--intake {
+  background: #eef2fb;
+  color: #33468c;
+}
+
+.slots__badge--summary {
+  background: #f3ecfb;
+  color: #6b3fa0;
+}
+
+.slots__badge--session_record {
+  background: #e3f3ee;
+  color: var(--color-primary-hover);
+}
+
 /* Accessibility helper: visually hidden but available to screen readers */
 .sr-only {
   position: absolute;

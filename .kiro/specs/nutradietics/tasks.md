@@ -103,11 +103,11 @@ Key cross-phase dependencies:
 
 ### Phase 5: Session Records & Medical History (Req 12, 13)
 
-- [ ] 5.1 Build `POST/PUT /appointments/:id/session-record`: professional-entered diagnosis + plan, required-field validation, author-only edit guard (Req 12.1–12.6).
-- [ ] 5.2 Build the post-appointment session-record form UI on the professional's appointment view.
-- [ ] 5.3 Implement the medical-history read-model service that aggregates a client's intakes, patient summaries, and session records in chronological order (Req 13.1, 13.3, 13.4).
-- [ ] 5.4 Build `GET /clients/:clientId/medical-history` with access control (self, or a professional with a booked appointment with that client) and `GET /clients/me/medical-history` (Req 13.2, 13.5, 13.6).
-- [ ] 5.5 Build the medical-history timeline UI for both the professional (pre-appointment view) and the client (self-view).
+- [x] 5.1 Build `POST/PUT /appointments/:id/session-record`: professional-entered diagnosis + plan, required-field validation, author-only edit guard (Req 12.1–12.6).
+- [x] 5.2 Build the post-appointment session-record form UI on the professional's appointment view.
+- [x] 5.3 Implement the medical-history read-model service that aggregates a client's intakes, patient summaries, and session records in chronological order (Req 13.1, 13.3, 13.4).
+- [x] 5.4 Build `GET /clients/:clientId/medical-history` with access control (self, or a professional with a booked appointment with that client) and `GET /clients/me/medical-history` (Req 13.2, 13.5, 13.6).
+- [x] 5.5 Build the medical-history timeline UI for both the professional (pre-appointment view) and the client (self-view).
 
   > Patient-summary entries will appear here once Phase 9 is built; session records and intakes are available now.
 
