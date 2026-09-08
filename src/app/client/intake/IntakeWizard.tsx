@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { Button, FormField, Input, Spinner, ErrorBanner } from "@/components/ui";
+import { Button, FormField, Input, ErrorBanner } from "@/components/ui";
+import { ThinkingIndicator } from "@/components/ThinkingIndicator";
 import {
   INTAKE_STEPS,
   STEP_LABELS,
@@ -594,8 +595,7 @@ function AutoAiPanel({
         </>
       ) : (
         <div className="wizard__loading">
-          <Spinner size={28} label={title} />
-          <p className="appointment__hint">{pendingText}</p>
+          <ThinkingIndicator message={pendingText} />
         </div>
       )}
     </div>

@@ -401,6 +401,105 @@ a {
   margin-top: var(--space-2);
 }
 
+/* --- Thinking indicator (AI loading character) --- */
+.thinking {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.thinking__avatar {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  animation: thinking-bob 1.8s ease-in-out infinite;
+}
+
+.thinking__face {
+  display: block;
+  filter: drop-shadow(0 6px 12px rgba(6, 78, 75, 0.15));
+}
+
+.thinking__badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--coral);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(217, 101, 69, 0.35);
+}
+
+.thinking__dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 14px;
+  box-shadow: var(--shadow-soft);
+}
+
+.thinking__dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--teal);
+  opacity: 0.4;
+  animation: thinking-pulse 1.2s ease-in-out infinite;
+}
+
+.thinking__dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.thinking__dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.thinking__message {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--teal);
+}
+
+@keyframes thinking-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes thinking-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thinking__avatar {
+    animation: none;
+  }
+  .thinking__dots span {
+    animation-duration: 2.4s;
+  }
+}
+
 /* --- Auth pages --- */
 .auth-page {
   max-width: 440px;
