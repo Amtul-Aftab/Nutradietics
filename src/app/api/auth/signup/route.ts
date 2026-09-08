@@ -3,6 +3,12 @@ import { Prisma, Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
 import { validateSignup } from "@/lib/auth-validation";
+import {
+  generateVerificationToken,
+  sendVerificationEmail,
+} from "@/lib/email";
+
+const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 export const runtime = "nodejs";
 
@@ -28,6 +34,10 @@ export async function POST(request: Request) {
   const { email, password, role, professionalType, name } = result.value;
   const passwordHash = await hashPassword(password);
 
+  // Generated up front so we can persist it in the same transaction as the
+  // user (rolls back with signup) and email it after the commit succeeds.
+  const verificationToken = generateVerificationToken();
+
   try {
     await prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
@@ -49,6 +59,16 @@ export async function POST(request: Request) {
           data: { userId: user.id, name: name ?? null },
         });
       }
+
+      // Issue a single-use email verification token (Req 17). Verification is
+      // optional and non-blocking; this just makes the token available.
+      await tx.verificationToken.create({
+        data: {
+          token: verificationToken,
+          userId: user.id,
+          expiresAt: new Date(Date.now() + VERIFICATION_TTL_MS),
+        },
+      });
     }, {
       // Remote Supabase adds network latency; give the interactive transaction
       // more room than Prisma's 5s default to acquire a connection and commit.
@@ -73,5 +93,16 @@ export async function POST(request: Request) {
     );
   }
 
-  return NextResponse.json({ ok: true }, { status: 201 });
+  // Best-effort verification email AFTER the account is safely committed. A
+  // failure here is logged inside the helper and must not fail signup — the
+  // user can proceed and re-request verification later (Req 17).
+  await sendVerificationEmail(email, verificationToken);
+
+  return NextResponse.json(
+    {
+      ok: true,
+      message: "Account created. Check your email to verify (optional).",
+    },
+    { status: 201 },
+  );
 }

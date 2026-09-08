@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, type FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { signIn, getSession } from "next-auth/react";
 import { Button, FormField, Input, ErrorBanner } from "@/components/ui";
 import { dashboardPathForRole } from "@/lib/routes";
 
-export default function SignInPage() {
+function SignInForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const justVerified = searchParams.get("verified") === "true";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +44,11 @@ export default function SignInPage() {
   return (
     <main className="auth-page">
       <h1>Sign in</h1>
+      {justVerified && (
+        <p className="auth-page__success" role="status">
+          Your email has been verified. You can now sign in.
+        </p>
+      )}
       {error && (
         <ErrorBanner title="Sign-in failed">
           <p>{error}</p>
@@ -76,5 +83,14 @@ export default function SignInPage() {
         Need an account? <Link href="/signup">Sign up</Link>
       </p>
     </main>
+  );
+}
+
+export default function SignInPage() {
+  // useSearchParams requires a Suspense boundary in the App Router.
+  return (
+    <Suspense fallback={null}>
+      <SignInForm />
+    </Suspense>
   );
 }

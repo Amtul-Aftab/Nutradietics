@@ -215,6 +215,7 @@ The AI-driven professional-type classification, follow-up question generation, p
 3. WHEN the AI returns a response THEN the system SHALL validate its structure before using it and treat malformed output as a failure.
 4. WHERE AI output is displayed to users THEN the system SHALL treat the AI response as untrusted content and avoid executing or blindly trusting embedded instructions.
 5. WHERE client health data is sent to the AI API THEN the system SHALL send only the data needed for the task and SHALL handle it consistent with the client's medical history access restrictions.
+6. WHERE a second AI API key is configured AND an AI call fails specifically with a rate-limit error (HTTP 429) THEN the system SHALL retry the same request once with the second key before returning a retryable error, so that a single key's daily quota does not become a hard ceiling. WHERE no second key is configured, OR the failure is not a rate-limit error, OR the retry also fails THEN the system SHALL return the existing retryable error unchanged. This failover SHALL remain internal to the AI adapter and transparent to callers (the four `AiClient` methods).
 
 ---
 
@@ -244,3 +245,18 @@ The AI-driven professional-type classification, follow-up question generation, p
 5. WHERE a professional has one or more reviews THEN the system SHALL display the average rating and the review count on the professional's profile and in match/browse results.
 6. WHERE a professional has no reviews THEN the system SHALL indicate that there are no reviews yet rather than showing a rating.
 7. There is no admin approval or moderation workflow for reviews.
+
+---
+
+## Requirement 17: Optional Email Verification
+
+**User Story:** As a new user, I want to verify my email address after signing up, so that I can confirm ownership of my email — without being blocked from using the app if I don't.
+
+#### Acceptance Criteria
+1. WHEN a user account is created THEN the system SHALL initialize `User.emailVerified` to false and SHALL issue a single-use verification token (32 characters) that expires 24 hours after creation.
+2. WHEN an account is created THEN the system SHALL send a best-effort verification email (via Resend) containing a link to the verification endpoint; IF the email send fails THEN the system SHALL log the failure and STILL complete signup successfully (the send is non-blocking).
+3. WHERE no email provider key is configured THEN the system SHALL skip the send gracefully and signup SHALL still succeed.
+4. WHEN a user opens the verification link with a valid, unexpired token THEN the system SHALL set `User.emailVerified` to true, consume (delete) the token, and redirect to the sign-in page with a success indication.
+5. IF the token is missing, unknown, or expired THEN the system SHALL return a 400 error and SHALL NOT change any account state.
+6. Email verification SHALL be optional: an unverified user SHALL retain full ability to sign in and use the app. The login flow SHALL NOT check `emailVerified`.
+7. WHERE the verification email is sent THEN the provider API key SHALL be kept server-side and SHALL NOT be exposed to the client.

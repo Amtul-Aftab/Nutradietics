@@ -529,6 +529,22 @@ a {
   text-decoration: underline;
 }
 
+.auth-page__hint {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  margin-top: calc(-1 * var(--space-2));
+}
+
+.auth-page__success {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--teal);
+  background: var(--sage);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+}
+
 /* --- Dashboard --- */
 .dashboard {
   max-width: 820px;

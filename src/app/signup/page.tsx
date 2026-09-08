@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { Button, FormField, Input, ErrorBanner } from "@/components/ui";
+import { useToast } from "@/components/Toast";
 import { dashboardPathForRole } from "@/lib/routes";
 
 type RoleChoice = "CLIENT" | "PROFESSIONAL";
@@ -12,6 +13,7 @@ type TypeChoice = "NUTRITIONIST" | "FITNESS_TRAINER";
 
 export default function SignUpPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,6 +49,10 @@ export default function SignUpPage() {
       setSubmitting(false);
       return;
     }
+
+    // Verification is optional and non-blocking; surface it as a toast that
+    // survives the auto-login redirect below.
+    toast("Account created! Check your email to verify.");
 
     // Auto sign-in after successful sign-up, then route by role.
     const signInRes = await signIn("credentials", {
@@ -141,6 +147,11 @@ export default function SignUpPage() {
             </select>
           </FormField>
         )}
+
+        <p className="auth-page__hint">
+          A verification email will be sent (verification is optional to
+          proceed).
+        </p>
 
         <Button type="submit" loading={submitting}>
           Sign up

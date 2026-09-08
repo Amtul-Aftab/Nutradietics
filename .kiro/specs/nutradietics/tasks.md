@@ -64,7 +64,7 @@ Phase 11 (Deployment Setup)
     { "phase": 8, "tasks": ["8.1", "8.2", "8.3", "8.4", "8.5", "8.6", "8.7", "8.8", "8.9", "8.10", "8.11", "8.12", "8.13", "8.14", "8.15", "8.16"] },
     { "phase": 9, "tasks": ["9.1"] },
     { "phase": 10, "tasks": ["10.1", "10.2", "10.3", "10.4", "10.5", "10.6"] },
-    { "phase": 11, "tasks": ["11.1", "11.2", "11.3", "11.4"] },
+    { "phase": 11, "tasks": ["11.1", "11.2", "11.3", "11.4", "11.5"] },
     { "phase": 12, "tasks": ["12.1", "12.2", "12.3", "12.4"] }
   ]
 }
@@ -94,6 +94,9 @@ Key cross-phase dependencies:
 - [x] 1.4 Configure Auth.js session/JWT callbacks to include `userId`, `role`, and (for professionals) `professionalType` (Req 1.6).
 - [x] 1.5 Add a `getSession`/`requireRole` server helper and route-protection middleware; return 401 for unauthenticated and 403 for wrong-role access (Req 1.6, 1.7).
 - [x] 1.6 Build sign-up, sign-in, and sign-out UI wired to Auth.js; redirect authenticated users to the correct dashboard by role.
+- [x] 1.7 Add optional, non-blocking email verification (Req 17): `User.emailVerified` + a single-use `VerificationToken` model (32-char token, 24h expiry); on signup issue the token in the same transaction and send a best-effort Resend email after commit; add `GET/POST /api/verify-email` to consume the token, set `emailVerified`, and redirect to `/signin?verified=true`; signup UI notes it's optional and the sign-in page shows a success banner. Login is unchanged and never checks `emailVerified`.
+
+  > Implementation: `src/lib/email.ts` (`generateVerificationToken`, `sendVerificationEmail`) posts to the Resend HTTP API and never throws - a missing `RESEND_API_KEY` or a non-2xx response is logged and signup still returns 201. Token is created inside the signup `$transaction` (rolls back with the user) and emailed only after the commit. `GET` handles the emailed link (clicks are GET); `POST` shares the same logic. Verification link base URL comes from `APP_BASE_URL` -> `NEXTAUTH_URL` -> `http://localhost:3000`.
 
 ### Phase 2: Professional Profile & Services (Req 2, 3)
 
@@ -186,7 +189,7 @@ Key cross-phase dependencies:
 - [x] 10.1 Wire the intake wizard through all steps driven by `Intake.status`: Describe -> classify -> standard fields -> questions -> answers -> match -> slot picker -> confirm, each with in-progress indicators and retry-preserving-input on AI failure (Req 6.5, 8.6, 8.8, 9.6).
 - [x] 10.2 Link booking to the intake: `POST /appointments` uses `intakeId`, sets intake status `BOOKED`, and creates the appointment tied to the matched professional (Req 11.2).
 - [x] 10.3 Replace the temporary browse/book UI (Phase 4.4) with the AI match-result view: matched professional details + rationale + available slots (Req 9.4, 11.1).
-- [ ] 10.4 Manually verify the complete journey end-to-end: description -> classification -> type-specific fields -> follow-up questions -> match -> booking -> professional sees summary + history -> professional records diagnosis/plan -> entry appears in the client's medical history.
+- [x] 10.4 Manually verify the complete journey end-to-end: description -> classification -> type-specific fields -> follow-up questions -> match -> booking -> professional sees summary + history -> professional records diagnosis/plan -> entry appears in the client's medical history.
 
   > Note: the four temporary `/api/ai-test/*` verification routes were removed in this phase. `/client/browse` now redirects to `/client/intake` (its final step is the AI match-result view). Task 10.4 is a manual browser walkthrough for the user to confirm.
 - [x] 10.5 Add a UI-only cross-type suggestion on the match-result and confirmation views: when the client's description suggests a dual-benefit goal, show a supportive message and a button that starts a new independent intake for the other professional type. No change to classification or the data model (Req 9.8).
@@ -194,19 +197,24 @@ Key cross-phase dependencies:
 
 ### Phase 11: Deployment Setup
 
-- [ ] 11.1 Document and configure all environment variables (`DATABASE_URL`, Auth.js secret/URL, AI provider key, AI timeout) with a `.env.example`; confirm none are exposed to the client bundle.
-- [ ] 11.2 Provision the production PostgreSQL database and run Prisma migrations against it; verify connectivity from the deploy target.
-- [ ] 11.3 Configure the single-app host (build command, start command, env vars, Node version) and deploy the Next.js app.
-- [ ] 11.4 Post-deploy smoke test: sign-up (both roles), profile/service/slot creation, a full AI intake-to-booking journey, and the post-appointment diagnosis + medical-history flow against the deployed environment.
+- [x] 11.1 Document and configure all environment variables (`DATABASE_URL`, Auth.js secret/URL, AI provider key, AI timeout) with a `.env.example`; confirm none are exposed to the client bundle.
+- [x] 11.2 Provision the production PostgreSQL database and run Prisma migrations against it; verify connectivity from the deploy target.
+- [x] 11.3 Configure the single-app host (build command, start command, env vars, Node version) and deploy the Next.js app.
+
+  > Deployed on Vercel with all environment variables configured (Supabase PostgreSQL for `DATABASE_URL`/`DIRECT_URL`, `AUTH_SECRET`/`NEXTAUTH_URL`, `AI_API_KEY` + `AI_API_KEY_2`, `AI_TIMEOUT_MS`, `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY`).
+- [x] 11.4 Post-deploy smoke test: sign-up (both roles), profile/service/slot creation, a full AI intake-to-booking journey, and the post-appointment diagnosis + medical-history flow against the deployed environment.
+- [x] 11.5 Two-key AI failover: add an optional second provider key (`AI_API_KEY_2`) and update the Gemini adapter's shared resilience wrapper so that a rate-limit failure (HTTP 429) on the primary key retries the same request once with the second key before surfacing the retryable error. Transparent to the four `AiClient` methods; degrades to single-key behavior when the second key is unset (Req 14.6).
+
+  > Implementation: `callAi` in `src/lib/ai/gemini.ts` iterates the configured keys (`AI_API_KEY`, then `AI_API_KEY_2`), attempting the primary first and failing over to the second only on a detected 429; any non-429 error fails fast without burning the fallback key, and a 429 on the last key returns the existing `AiUnavailableError` (503, retryable). Same provider/adapter - roughly doubles effective daily quota.
 
 ### Phase 12: Profile Pictures & Reviews (Req 15, 16)
 
 > Two small post-launch enhancements. No admin approval, moderation, or document verification.
 
-- [ ] 12.1 Schema: add `Professional.avatarUrl` and a `Review` model (rating 1-5, optional text, unique per appointment, linked to client + professional); run the migration (Req 15, 16).
-- [ ] 12.2 Profile pictures: add a server-side Supabase Storage client (`SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`, `avatars` bucket) and `POST /professionals/me/avatar` (image-only, replaces prior photo); add the upload control to the profile editor (Req 15).
-- [ ] 12.3 Reviews: `POST /appointments/:id/review` (client-owned appointment, rating 1-5, one per appointment, upsert on repeat) and a `getProfessionalRating` average/count helper (Req 16.1-16.4).
-- [ ] 12.4 Display: show the avatar and average rating + review count on the professional's profile and in the AI match-result view; add the leave-a-review form on the client's appointments view; neutral placeholder / "no reviews yet" fallbacks (Req 15.4, 16.5, 16.6).
+- [x] 12.1 Schema: add `Professional.avatarUrl` and a `Review` model (rating 1-5, optional text, unique per appointment, linked to client + professional); run the migration (Req 15, 16).
+- [x] 12.2 Profile pictures: add a server-side Supabase Storage client (`SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`, `avatars` bucket) and `POST /professionals/me/avatar` (image-only, replaces prior photo); add the upload control to the profile editor (Req 15).
+- [x] 12.3 Reviews: `POST /appointments/:id/review` (client-owned appointment, rating 1-5, one per appointment, upsert on repeat) and a `getProfessionalRating` average/count helper (Req 16.1-16.4).
+- [x] 12.4 Display: show the avatar and average rating + review count on the professional's profile and in the AI match-result view; add the leave-a-review form on the client's appointments view; neutral placeholder / "no reviews yet" fallbacks (Req 15.4, 16.5, 16.6).
 
 ## Notes
 

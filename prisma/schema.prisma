@@ -64,14 +64,27 @@ enum PaymentStatus {
 // ---------------------------------------------------------------------------
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  passwordHash String
-  role         Role
-  createdAt    DateTime @default(now())
+  id            String   @id @default(uuid())
+  email         String   @unique
+  passwordHash  String
+  role          Role
+  emailVerified Boolean  @default(false) // set true via /api/verify-email; optional, non-blocking (Req 17)
+  createdAt     DateTime @default(now())
 
-  professional  Professional? // set when role = PROFESSIONAL
-  clientProfile ClientProfile? // set when role = CLIENT
+  professional       Professional? // set when role = PROFESSIONAL
+  clientProfile      ClientProfile? // set when role = CLIENT
+  verificationTokens VerificationToken[]
+}
+
+// Single-use email verification tokens. Optional flow: signup issues one and
+// emails a link; /api/verify-email consumes it. Not required to use the app.
+model VerificationToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model Professional {
