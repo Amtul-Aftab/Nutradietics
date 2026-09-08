@@ -178,7 +178,7 @@ model Service {
   type           ProfessionalType // denormalized from professional for match filtering (Req 3.1)
   specialty      String
   description    String
-  priceCents     Int              // integer cents; validated >= 0 (Req 3.3)
+  priceCents     Int              // whole PKR amount; validated integer >= 0 (Req 3.3). Legacy column name; holds rupees, not paisa. Displayed as "Rs 5,000".
   active         Boolean          @default(true)
 }
 
@@ -346,7 +346,7 @@ All routes are Next.js route handlers under `app/api/**`. Auth required except s
 
 ### Professional (Req 2, 3, 4) — professional role
 - `PUT /professionals/me/profile` — name, type, specialty, bio; validates required fields (Req 2.3, 2.4).
-- `POST /professionals/me/services` / `PUT` / `DELETE /:id` — price validated ≥ 0 integer cents (Req 3.3).
+- `POST /professionals/me/services` / `PUT` / `DELETE /:id` — price validated as a whole-PKR integer ≥ 0 (Req 3.3); displayed as "Rs 5,000".
 - `GET /professionals/me/services` — dashboard listing (Req 3.4).
 - `POST /professionals/me/slots` — rejects overlap and past/invalid ranges (Req 4.2, 4.3).
 - `DELETE /professionals/me/slots/:id` — only if unbooked (Req 4.5).

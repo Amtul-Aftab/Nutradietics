@@ -2,11 +2,13 @@
 
 import { useState, type FormEvent } from "react";
 import { Button, FormField, Input, ErrorBanner } from "@/components/ui";
+import { formatPkr } from "@/lib/currency";
 
 interface Service {
   id: string;
   specialty: string;
   description: string;
+  // Whole PKR amount (column is named priceCents for legacy reasons).
   priceCents: number;
 }
 
@@ -14,14 +16,11 @@ interface ServicesManagerProps {
   initialServices: Service[];
 }
 
-function dollarsToCents(value: string): number | null {
-  const trimmed = value.trim();
-  if (!/^\d+(\.\d{1,2})?$/.test(trimmed)) return null;
-  return Math.round(parseFloat(trimmed) * 100);
-}
-
-function centsToDollars(cents: number): string {
-  return (cents / 100).toFixed(2);
+/** Parses a whole-rupee price string; returns null if invalid. */
+function parsePkr(value: string): number | null {
+  const trimmed = value.trim().replace(/,/g, "");
+  if (!/^\d+$/.test(trimmed)) return null;
+  return parseInt(trimmed, 10);
 }
 
 export function ServicesManager({ initialServices }: ServicesManagerProps) {
@@ -49,7 +48,7 @@ export function ServicesManager({ initialServices }: ServicesManagerProps) {
     setEditingId(s.id);
     setSpecialty(s.specialty);
     setDescription(s.description);
-    setPrice(centsToDollars(s.priceCents));
+    setPrice(String(s.priceCents));
     setFieldErrors({});
     setError(null);
   }
@@ -59,9 +58,9 @@ export function ServicesManager({ initialServices }: ServicesManagerProps) {
     setError(null);
     setFieldErrors({});
 
-    const priceCents = dollarsToCents(price);
+    const priceCents = parsePkr(price);
     if (priceCents === null) {
-      setFieldErrors({ priceCents: "Enter a valid price like 49 or 49.99." });
+      setFieldErrors({ priceCents: "Enter a whole rupee amount, e.g. 5000." });
       return;
     }
 
@@ -121,7 +120,7 @@ export function ServicesManager({ initialServices }: ServicesManagerProps) {
             {services.map((s) => (
               <li key={s.id} className="services__item">
                 <div>
-                  <strong>{s.specialty}</strong> — ${centsToDollars(s.priceCents)}
+                  <strong>{s.specialty}</strong> — {formatPkr(s.priceCents)}
                   <p className="services__desc">{s.description}</p>
                 </div>
                 <div className="services__actions">
@@ -175,15 +174,15 @@ export function ServicesManager({ initialServices }: ServicesManagerProps) {
             />
           </FormField>
           <FormField
-            label="Price (USD)"
+            label="Price (PKR)"
             htmlFor="svc-price"
             required
-            hint="Per session, e.g. 49.99"
+            hint="Per session, whole rupees, e.g. 5000"
             error={fieldErrors.priceCents}
           >
             <Input
               id="svc-price"
-              inputMode="decimal"
+              inputMode="numeric"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               invalid={Boolean(fieldErrors.priceCents)}

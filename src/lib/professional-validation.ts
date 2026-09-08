@@ -48,9 +48,9 @@ export interface ServiceInput {
 }
 
 /**
- * Validates a service payload. Price must be a non-negative integer number of
- * cents (Req 3.3). Type is denormalized from the professional server-side, not
- * accepted from the client.
+ * Validates a service payload. Price is a non-negative integer number of whole
+ * PKR (stored in the legacy-named `priceCents` column) (Req 3.3). Type is
+ * denormalized from the professional server-side, not accepted from the client.
  */
 export function validateService(raw: unknown): ValidationResult<ServiceInput> {
   const errors: Record<string, string> = {};
