@@ -4,6 +4,7 @@ import { useState, useRef, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button, ErrorBanner } from "@/components/ui";
 import { Avatar } from "@/components/Avatar";
+import { useToast } from "@/components/Toast";
 
 export function AvatarUpload({
   initialUrl,
@@ -13,6 +14,7 @@ export function AvatarUpload({
   name: string;
 }) {
   const router = useRouter();
+  const { toast } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const [url, setUrl] = useState<string | null>(initialUrl);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +46,7 @@ export function AvatarUpload({
     }
     const d = await res.json();
     setUrl(d.avatarUrl);
+    toast("Profile photo updated.");
     router.refresh();
   }
 

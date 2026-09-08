@@ -7,6 +7,8 @@ import { dashboardPathForRole } from "@/lib/routes";
 import { getMedicalHistory } from "@/lib/medical-history";
 import { MedicalHistoryTimeline } from "@/components/MedicalHistoryTimeline";
 
+export const metadata = { title: "Medical history" };
+
 export default async function ClientHistoryPage() {
   const session = await auth();
   if (!session?.user) redirect("/signin");

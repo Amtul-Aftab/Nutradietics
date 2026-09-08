@@ -10,6 +10,7 @@ import {
   type IntakeStep,
 } from "@/lib/intake-steps";
 import type { FieldSpec } from "@/lib/standard-fields";
+import { formatRange } from "@/lib/format";
 import { Avatar } from "@/components/Avatar";
 import { RatingBadge } from "@/components/RatingBadge";
 import { CrossTypeSuggestion } from "./CrossTypeSuggestion";
@@ -46,18 +47,6 @@ export interface WizardData {
 
 function typeLabel(t: "NUTRITIONIST" | "FITNESS_TRAINER"): string {
   return t === "NUTRITIONIST" ? "Nutritionist" : "Fitness trainer";
-}
-
-function formatRange(startsAt: string, endsAt: string): string {
-  const start = new Date(startsAt);
-  const end = new Date(endsAt);
-  const date = start.toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-  const opts: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit" };
-  return `${date}, ${start.toLocaleTimeString(undefined, opts)} - ${end.toLocaleTimeString(undefined, opts)}`;
 }
 
 export function IntakeWizard({ data }: { data: WizardData }) {

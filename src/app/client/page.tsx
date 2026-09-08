@@ -2,7 +2,11 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { Role } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { dashboardPathForRole } from "@/lib/routes";
+
+export const dynamic = "force-dynamic";
+export const metadata = { title: "Your dashboard" };
 
 export default async function ClientDashboardPage() {
   const session = await auth();
@@ -11,11 +15,17 @@ export default async function ClientDashboardPage() {
     redirect(dashboardPathForRole(session.user.role));
   }
 
+  // Prefer the client's name; fall back to a generic greeting (never the email).
+  const clientProfile = await prisma.clientProfile.findUnique({
+    where: { userId: session.user.id },
+    select: { name: true },
+  });
+  const name = clientProfile?.name?.trim();
+
   return (
     <main className="dashboard">
       <p className="dashboard__eyebrow">Your wellbeing space</p>
-      <h1>Welcome back</h1>
-      <p className="dashboard__welcome">Signed in as {session.user.email}.</p>
+      <h1>{name ? `Welcome back, ${name}` : "Welcome back"}</h1>
 
       <nav className="dashboard__links">
         <Link href="/client/intake">Get matched</Link>

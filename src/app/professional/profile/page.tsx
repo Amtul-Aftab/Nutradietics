@@ -9,6 +9,8 @@ import { RatingBadge } from "@/components/RatingBadge";
 import { ProfileForm } from "./ProfileForm";
 import { AvatarUpload } from "./AvatarUpload";
 
+export const metadata = { title: "Your profile" };
+
 export default async function ProfilePage() {
   const session = await auth();
   if (!session?.user) redirect("/signin");

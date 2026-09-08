@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma";
 import { dashboardPathForRole } from "@/lib/routes";
 import { ServicesManager } from "./ServicesManager";
 
+export const metadata = { title: "Services" };
+
 export default async function ServicesPage() {
   const session = await auth();
   if (!session?.user) redirect("/signin");

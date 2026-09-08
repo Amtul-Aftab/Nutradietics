@@ -7,9 +7,15 @@ import { SignOutButton } from "@/components/SignOutButton";
 import { dashboardPathForRole } from "@/lib/routes";
 
 export const metadata: Metadata = {
-  title: "Nutradietics",
+  title: {
+    default: "Nutradietics",
+    template: "%s · Nutradietics",
+  },
   description:
     "A marketplace connecting clients with nutritionists and fitness trainers.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default async function RootLayout({

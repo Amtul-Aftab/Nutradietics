@@ -10,6 +10,8 @@ import { getCrossTypeSuggestion } from "@/lib/cross-type-suggestion";
 import { getProfessionalRating } from "@/lib/reviews";
 import { IntakeWizard, type WizardData } from "./IntakeWizard";
 
+export const metadata = { title: "Get matched" };
+
 export default async function IntakePage({
   searchParams,
 }: {

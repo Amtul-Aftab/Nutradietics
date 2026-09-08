@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button, FormField, Input, ErrorBanner } from "@/components/ui";
+import { useToast } from "@/components/Toast";
 
 interface AppointmentDetailsFormProps {
   appointmentId: string;
@@ -20,6 +21,7 @@ export function AppointmentDetailsForm({
   initialPaymentStatus,
 }: AppointmentDetailsFormProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [meetingLink, setMeetingLink] = useState(initialMeetingLink);
   const [paymentStatus, setPaymentStatus] = useState(initialPaymentStatus);
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +52,7 @@ export function AppointmentDetailsForm({
     setSavingLink(false);
     if (ok) {
       setSaved(true);
+      toast("Meeting link saved.");
       router.refresh();
     }
   }
@@ -61,6 +64,7 @@ export function AppointmentDetailsForm({
     setTogglingPaid(false);
     if (ok) {
       setPaymentStatus(next);
+      toast(next === "PAID" ? "Marked as paid." : "Marked as pending.");
       router.refresh();
     }
   }
@@ -89,7 +93,7 @@ export function AppointmentDetailsForm({
           />
         </FormField>
         <Button type="submit" loading={savingLink}>
-          Save link
+          {savingLink ? "Saving..." : "Save link"}
         </Button>
       </form>
 

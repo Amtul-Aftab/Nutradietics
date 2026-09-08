@@ -8,16 +8,9 @@ import { getMedicalHistory } from "@/lib/medical-history";
 import { MedicalHistoryTimeline } from "@/components/MedicalHistoryTimeline";
 import { SessionRecordForm } from "./SessionRecordForm";
 import { AppointmentDetailsForm } from "./AppointmentDetailsForm";
+import { formatRange } from "@/lib/format";
 
-function formatRange(startsAt: Date, endsAt: Date): string {
-  const date = startsAt.toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-  const opts: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit" };
-  return `${date}, ${startsAt.toLocaleTimeString(undefined, opts)} – ${endsAt.toLocaleTimeString(undefined, opts)}`;
-}
+export const metadata = { title: "Appointment" };
 
 export default async function AppointmentDetailPage({
   params,

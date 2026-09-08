@@ -1,4 +1,5 @@
 import type { MedicalHistoryEntry } from "@/lib/medical-history";
+import { humanizeEnum, formatTimestamp } from "@/lib/format";
 
 const TYPE_LABELS: Record<string, string> = {
   INTAKE: "Intake",
@@ -16,15 +17,8 @@ const DETAIL_LABELS: Record<string, string> = {
   plan: "Recommended plan",
 };
 
-function formatWhen(at: string): string {
-  return new Date(at).toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
+// Detail values that are enum-like and should render human-readable.
+const HUMANIZE_VALUE_KEYS = new Set(["professionalType"]);
 
 export function MedicalHistoryTimeline({
   entries,
@@ -46,7 +40,7 @@ export function MedicalHistoryTimeline({
               {TYPE_LABELS[entry.type] ?? entry.type}
             </span>
             <strong className="history__title">{entry.title}</strong>
-            <time className="history__when">{formatWhen(entry.at)}</time>
+            <time className="history__when">{formatTimestamp(entry.at)}</time>
           </div>
           <dl className="history__details">
             {Object.entries(entry.details)
@@ -55,7 +49,11 @@ export function MedicalHistoryTimeline({
                 <div key={key} className="history__detail">
                   <dt>{DETAIL_LABELS[key] ?? key}</dt>
                   {/* AI/client/professional text rendered as inert text (Req 14.4). */}
-                  <dd>{value}</dd>
+                  <dd>
+                    {HUMANIZE_VALUE_KEYS.has(key)
+                      ? humanizeEnum(String(value))
+                      : value}
+                  </dd>
                 </div>
               ))}
           </dl>

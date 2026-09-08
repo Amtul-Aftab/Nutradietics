@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma";
 import { dashboardPathForRole } from "@/lib/routes";
 import { AvailabilityManager } from "./AvailabilityManager";
 
+export const metadata = { title: "Availability" };
+
 export default async function AvailabilityPage() {
   const session = await auth();
   if (!session?.user) redirect("/signin");

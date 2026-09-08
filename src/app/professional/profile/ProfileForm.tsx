@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button, FormField, Input, ErrorBanner } from "@/components/ui";
+import { useToast } from "@/components/Toast";
 
 type TypeChoice = "NUTRITIONIST" | "FITNESS_TRAINER";
 
@@ -17,6 +18,7 @@ interface ProfileFormProps {
 
 export function ProfileForm({ initial }: ProfileFormProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [name, setName] = useState(initial.name);
   const [type, setType] = useState<TypeChoice>(initial.type);
   const [specialty, setSpecialty] = useState(initial.specialty);
@@ -49,6 +51,7 @@ export function ProfileForm({ initial }: ProfileFormProps) {
     }
 
     setSaved(true);
+    toast("Profile updated.");
     router.refresh();
   }
 
@@ -64,6 +67,7 @@ export function ProfileForm({ initial }: ProfileFormProps) {
       <FormField label="Name" htmlFor="name" required error={fieldErrors.name}>
         <Input
           id="name"
+          placeholder="e.g. Maya Ahmed"
           value={name}
           onChange={(e) => setName(e.target.value)}
           invalid={Boolean(fieldErrors.name)}
@@ -97,6 +101,7 @@ export function ProfileForm({ initial }: ProfileFormProps) {
       >
         <Input
           id="specialty"
+          placeholder="e.g. Weight management, sports nutrition"
           value={specialty}
           onChange={(e) => setSpecialty(e.target.value)}
           invalid={Boolean(fieldErrors.specialty)}
@@ -109,13 +114,14 @@ export function ProfileForm({ initial }: ProfileFormProps) {
           id="bio"
           className="input textarea"
           rows={4}
+          placeholder="Tell clients about your background, approach, and who you love working with."
           value={bio}
           onChange={(e) => setBio(e.target.value)}
         />
       </FormField>
 
       <Button type="submit" loading={submitting}>
-        Save profile
+        {submitting ? "Saving..." : "Save profile"}
       </Button>
     </form>
   );

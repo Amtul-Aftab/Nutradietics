@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { Button, FormField, Input, ErrorBanner } from "@/components/ui";
+import { useToast } from "@/components/Toast";
 import { formatPkr } from "@/lib/currency";
 
 interface Service {
@@ -24,6 +25,7 @@ function parsePkr(value: string): number | null {
 }
 
 export function ServicesManager({ initialServices }: ServicesManagerProps) {
+  const { toast } = useToast();
   const [services, setServices] = useState<Service[]>(initialServices);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -64,6 +66,7 @@ export function ServicesManager({ initialServices }: ServicesManagerProps) {
       return;
     }
 
+    const isEdit = Boolean(editingId);
     setSubmitting(true);
     const url = editingId
       ? `/api/professionals/me/services/${editingId}`
@@ -93,6 +96,7 @@ export function ServicesManager({ initialServices }: ServicesManagerProps) {
         : [...prev, saved],
     );
     resetForm();
+    toast(isEdit ? "Service updated." : "Service added.");
   }
 
   async function onDelete(id: string) {
@@ -107,6 +111,7 @@ export function ServicesManager({ initialServices }: ServicesManagerProps) {
     }
     setServices((prev) => prev.filter((s) => s.id !== id));
     if (editingId === id) resetForm();
+    toast("Service removed.");
   }
 
   return (
@@ -114,7 +119,19 @@ export function ServicesManager({ initialServices }: ServicesManagerProps) {
       <section className="services__list">
         <h2>Your services</h2>
         {services.length === 0 ? (
-          <p className="services__empty">No services yet. Add one below.</p>
+          <div className="empty-state">
+            <span className="empty-state__icon" aria-hidden="true">
+              🧾
+            </span>
+            <h2>Add your first service</h2>
+            <p>
+              Clients can&apos;t find you until you list at least one service.
+              Add what you offer and your pricing to get started.
+            </p>
+            <a href="#service-form" className="btn btn--primary">
+              Add service
+            </a>
+          </div>
         ) : (
           <ul>
             {services.map((s) => (
@@ -137,7 +154,7 @@ export function ServicesManager({ initialServices }: ServicesManagerProps) {
         )}
       </section>
 
-      <section className="services__form">
+      <section className="services__form" id="service-form">
         <h2>{editingId ? "Edit service" : "Add a service"}</h2>
         <form onSubmit={onSubmit} noValidate>
           {error && (
@@ -153,6 +170,7 @@ export function ServicesManager({ initialServices }: ServicesManagerProps) {
           >
             <Input
               id="svc-specialty"
+              placeholder="e.g. Weight management, sports nutrition"
               value={specialty}
               onChange={(e) => setSpecialty(e.target.value)}
               invalid={Boolean(fieldErrors.specialty)}
@@ -169,6 +187,7 @@ export function ServicesManager({ initialServices }: ServicesManagerProps) {
               id="svc-description"
               className="input textarea"
               rows={3}
+              placeholder="Describe what this service includes for the client."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -183,6 +202,7 @@ export function ServicesManager({ initialServices }: ServicesManagerProps) {
             <Input
               id="svc-price"
               inputMode="numeric"
+              placeholder="5000"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               invalid={Boolean(fieldErrors.priceCents)}
@@ -191,7 +211,11 @@ export function ServicesManager({ initialServices }: ServicesManagerProps) {
           </FormField>
           <div className="services__form-actions">
             <Button type="submit" loading={submitting}>
-              {editingId ? "Save changes" : "Add service"}
+              {submitting
+                ? "Saving..."
+                : editingId
+                  ? "Save changes"
+                  : "Add service"}
             </Button>
             {editingId && (
               <Button type="button" variant="secondary" onClick={resetForm}>

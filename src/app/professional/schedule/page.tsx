@@ -4,19 +4,9 @@ import { AppointmentStatus, Role } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { dashboardPathForRole } from "@/lib/routes";
+import { formatRange } from "@/lib/format";
 
-function formatRange(startsAt: Date, endsAt: Date): string {
-  const date = startsAt.toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-  const opts: Intl.DateTimeFormatOptions = {
-    hour: "numeric",
-    minute: "2-digit",
-  };
-  return `${date}, ${startsAt.toLocaleTimeString(undefined, opts)} – ${endsAt.toLocaleTimeString(undefined, opts)}`;
-}
+export const metadata = { title: "Schedule" };
 
 export default async function SchedulePage() {
   const session = await auth();

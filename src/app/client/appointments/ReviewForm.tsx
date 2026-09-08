@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button, ErrorBanner } from "@/components/ui";
+import { useToast } from "@/components/Toast";
 
 interface ReviewFormProps {
   appointmentId: string;
@@ -11,6 +12,7 @@ interface ReviewFormProps {
 
 export function ReviewForm({ appointmentId, initial }: ReviewFormProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [rating, setRating] = useState<number>(initial?.rating ?? 0);
   const [text, setText] = useState(initial?.text ?? "");
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +40,7 @@ export function ReviewForm({ appointmentId, initial }: ReviewFormProps) {
       return;
     }
     setSaved(true);
+    toast(initial ? "Review updated." : "Review submitted.");
     router.refresh();
   }
 
@@ -77,7 +80,11 @@ export function ReviewForm({ appointmentId, initial }: ReviewFormProps) {
         onChange={(e) => setText(e.target.value)}
       />
       <Button type="submit" loading={submitting}>
-        {initial ? "Update review" : "Submit review"}
+        {submitting
+          ? "Saving..."
+          : initial
+            ? "Update review"
+            : "Submit review"}
       </Button>
     </form>
   );

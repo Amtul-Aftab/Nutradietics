@@ -5,18 +5,10 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { dashboardPathForRole } from "@/lib/routes";
 import { ReviewForm } from "./ReviewForm";
+import { formatRange } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
-
-function formatRange(startsAt: Date, endsAt: Date): string {
-  const date = startsAt.toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-  const opts: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit" };
-  return `${date}, ${startsAt.toLocaleTimeString(undefined, opts)} - ${endsAt.toLocaleTimeString(undefined, opts)}`;
-}
+export const metadata = { title: "Your appointments" };
 
 export default async function ClientAppointmentsPage() {
   const session = await auth();

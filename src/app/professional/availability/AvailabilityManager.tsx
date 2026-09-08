@@ -2,6 +2,8 @@
 
 import { useState, type FormEvent } from "react";
 import { Button, FormField, Input, ErrorBanner } from "@/components/ui";
+import { useToast } from "@/components/Toast";
+import { formatRange } from "@/lib/format";
 
 interface Slot {
   id: string;
@@ -14,21 +16,10 @@ interface AvailabilityManagerProps {
   initialSlots: Slot[];
 }
 
-function formatRange(startsAt: string, endsAt: string): string {
-  const start = new Date(startsAt);
-  const end = new Date(endsAt);
-  const date = start.toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-  const opts: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit" };
-  return `${date}, ${start.toLocaleTimeString(undefined, opts)} – ${end.toLocaleTimeString(undefined, opts)}`;
-}
-
 export function AvailabilityManager({
   initialSlots,
 }: AvailabilityManagerProps) {
+  const { toast } = useToast();
   const [slots, setSlots] = useState<Slot[]>(initialSlots);
   const [startsAt, setStartsAt] = useState("");
   const [endsAt, setEndsAt] = useState("");
@@ -71,6 +62,7 @@ export function AvailabilityManager({
     );
     setStartsAt("");
     setEndsAt("");
+    toast("Time slot added.");
   }
 
   async function onRemove(id: string) {
@@ -84,6 +76,7 @@ export function AvailabilityManager({
       return;
     }
     setSlots((prev) => prev.filter((s) => s.id !== id));
+    toast("Time slot removed.");
   }
 
   return (
@@ -91,7 +84,19 @@ export function AvailabilityManager({
       <section className="slots__list">
         <h2>Your availability</h2>
         {slots.length === 0 ? (
-          <p className="slots__empty">No slots yet. Add one below.</p>
+          <div className="empty-state">
+            <span className="empty-state__icon" aria-hidden="true">
+              🗓️
+            </span>
+            <h2>Set your availability</h2>
+            <p>
+              Add a few open time slots so matched clients can actually book a
+              session with you.
+            </p>
+            <a href="#slot-form" className="btn btn--primary">
+              Add a time slot
+            </a>
+          </div>
         ) : (
           <ul>
             {slots.map((s) => (
@@ -122,7 +127,7 @@ export function AvailabilityManager({
         )}
       </section>
 
-      <section className="slots__form">
+      <section className="slots__form" id="slot-form">
         <h2>Add a slot</h2>
         <form onSubmit={onAdd} noValidate>
           {error && (
@@ -161,7 +166,7 @@ export function AvailabilityManager({
             />
           </FormField>
           <Button type="submit" loading={submitting}>
-            Add slot
+            {submitting ? "Adding..." : "Add slot"}
           </Button>
         </form>
       </section>

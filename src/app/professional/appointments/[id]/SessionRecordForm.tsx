@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button, FormField, ErrorBanner } from "@/components/ui";
+import { useToast } from "@/components/Toast";
 
 interface SessionRecordFormProps {
   appointmentId: string;
@@ -14,6 +15,7 @@ export function SessionRecordForm({
   initial,
 }: SessionRecordFormProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const hasExisting = initial !== null;
   const [diagnosis, setDiagnosis] = useState(initial?.diagnosis ?? "");
   const [plan, setPlan] = useState(initial?.plan ?? "");
@@ -48,6 +50,7 @@ export function SessionRecordForm({
     }
 
     setSaved(true);
+    toast(hasExisting ? "Session record updated." : "Session record saved.");
     router.refresh();
   }
 
@@ -70,6 +73,7 @@ export function SessionRecordForm({
           id="diagnosis"
           className="input textarea"
           rows={4}
+          placeholder="Summarize your assessment and key findings from this session."
           value={diagnosis}
           onChange={(e) => setDiagnosis(e.target.value)}
           required
@@ -86,6 +90,7 @@ export function SessionRecordForm({
           id="plan"
           className="input textarea"
           rows={4}
+          placeholder="Outline the recommended plan, next steps, and any follow-up."
           value={plan}
           onChange={(e) => setPlan(e.target.value)}
           required
@@ -93,7 +98,11 @@ export function SessionRecordForm({
       </FormField>
 
       <Button type="submit" loading={submitting}>
-        {hasExisting ? "Update record" : "Save record"}
+        {submitting
+          ? "Saving..."
+          : hasExisting
+            ? "Update record"
+            : "Save record"}
       </Button>
     </form>
   );
