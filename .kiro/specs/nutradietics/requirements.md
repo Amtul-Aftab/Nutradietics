@@ -1,4 +1,4 @@
-# Nutradietics — Requirements
+# Requirements Document
 
 ## Introduction
 
@@ -8,7 +8,7 @@ Before each appointment, the matched professional can view an AI-generated patie
 
 The AI-driven professional-type classification, follow-up question generation, professional matching, and patient summary are powered by real AI API calls, not hardcoded rules. The professional's diagnosis/solution is entered by the professional and is NOT AI-generated.
 
-### Terminology
+## Glossary
 - **Professional**: A health professional on the platform, of type nutritionist or fitness trainer.
 - **Professional type**: One of exactly two values — nutritionist or fitness trainer.
 - **Client**: A user seeking help from a professional.
@@ -22,6 +22,8 @@ The AI-driven professional-type classification, follow-up question generation, p
 - **Match**: An AI-produced selection of a professional of the identified type against a client's intake.
 
 ---
+
+## Requirements
 
 ## Requirement 1: Account Registration and Authentication
 
