@@ -228,6 +228,179 @@ a {
   color: #dcebe4;
 }
 
+/* --- Why Nutradietics (homepage) --- */
+.why {
+  margin-top: 64px;
+}
+
+.why__eyebrow {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--coral);
+  text-align: center;
+}
+
+.why__title {
+  font-size: 30px;
+  color: var(--teal);
+  text-align: center;
+  margin: 8px 0 32px;
+}
+
+.why__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.why__card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 26px;
+  box-shadow: var(--shadow-soft);
+}
+
+.why__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: var(--sage);
+  font-size: 22px;
+}
+
+.why__card h3 {
+  font-size: 18px;
+  color: var(--teal);
+  margin: 14px 0 6px;
+}
+
+.why__card p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* --- Footer --- */
+.site-footer {
+  margin-top: 64px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.site-footer__brand {
+  font-family: var(--font-heading-stack);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--teal);
+}
+
+.site-footer__fine {
+  font-size: 12.5px;
+  color: #8a938e;
+  margin-top: 6px;
+}
+
+/* --- Dashboard intro + empty states --- */
+.dashboard__eyebrow {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--coral);
+}
+
+.dashboard__welcome {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.dashboard__note {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-top: var(--space-2);
+}
+
+.empty-state {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow-soft);
+  padding: 32px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.empty-state__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: var(--sage);
+  font-size: 24px;
+  margin-bottom: var(--space-1);
+}
+
+.empty-state h2 {
+  color: var(--teal);
+  font-size: 20px;
+}
+
+.empty-state p {
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-width: 460px;
+}
+
+.empty-state .btn {
+  margin-top: var(--space-2);
+}
+
+.setup-checklist {
+  list-style: none;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.setup-checklist li {
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.setup-checklist li.is-done {
+  color: var(--sage-deep);
+}
+
+.setup-checklist a {
+  color: var(--coral-dark);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* --- Match trust line --- */
+.match__trust {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-top: var(--space-2);
+}
+
 /* --- Auth pages --- */
 .auth-page {
   max-width: 440px;
