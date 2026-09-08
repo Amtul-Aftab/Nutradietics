@@ -54,20 +54,30 @@ export default async function SchedulePage() {
         <ul className="schedule">
           {appointments.map((a) => (
             <li key={a.id} className="schedule__item">
-              <Link
-                href={`/professional/appointments/${a.id}`}
-                className="schedule__link"
-              >
+              <div className="schedule__row">
                 <span>{formatRange(a.timeSlot.startsAt, a.timeSlot.endsAt)}</span>
                 <span className="schedule__client">
                   {a.clientProfile.name ?? a.clientProfile.user.email}
                 </span>
-              </Link>
-              <span
-                className={`slots__badge slots__badge--${a.status.toLowerCase()}`}
-              >
-                {a.status}
-              </span>
+              </div>
+              <div className="schedule__chips">
+                <span
+                  className={`slots__badge slots__badge--${a.meetingLink ? "confirmed" : "booked"}`}
+                >
+                  {a.meetingLink ? "Meeting link added" : "No meeting link"}
+                </span>
+                <span
+                  className={`slots__badge slots__badge--${a.paymentStatus === "PAID" ? "confirmed" : "booked"}`}
+                >
+                  {a.paymentStatus === "PAID" ? "Paid" : "Payment pending"}
+                </span>
+                <Link
+                  href={`/professional/appointments/${a.id}`}
+                  className="schedule__manage"
+                >
+                  {a.meetingLink ? "Manage" : "Add meeting link"}
+                </Link>
+              </div>
             </li>
           ))}
         </ul>
