@@ -4,6 +4,7 @@ import { AppointmentStatus, Role } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { dashboardPathForRole } from "@/lib/routes";
+import { ReviewForm } from "./ReviewForm";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +35,11 @@ export default async function ClientAppointmentsPage() {
       clientProfileId: clientProfile.id,
       status: { not: AppointmentStatus.CANCELLED },
     },
-    include: { timeSlot: true, professional: { select: { name: true, type: true } } },
+    include: {
+      timeSlot: true,
+      professional: { select: { name: true, type: true } },
+      review: true,
+    },
     orderBy: { timeSlot: { startsAt: "asc" } },
   });
 
@@ -74,6 +79,19 @@ export default async function ClientAppointmentsPage() {
                   </span>
                 )}
               </p>
+              <details className="review-block">
+                <summary>
+                  {a.review ? "Edit your review" : "Leave a review"}
+                </summary>
+                <ReviewForm
+                  appointmentId={a.id}
+                  initial={
+                    a.review
+                      ? { rating: a.review.rating, text: a.review.text ?? "" }
+                      : null
+                  }
+                />
+              </details>
             </li>
           ))}
         </ul>

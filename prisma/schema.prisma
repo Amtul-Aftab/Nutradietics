@@ -82,11 +82,13 @@ model Professional {
   type      ProfessionalType // Req 1.2, 2.4
   specialty String
   bio       String?
+  avatarUrl String? // Supabase Storage public URL (Req 15)
 
   services       Service[]
   slots          TimeSlot[]
   appointments   Appointment[]
   sessionRecords SessionRecord[]
+  reviews        Review[] // Req 16
 }
 
 model ClientProfile {
@@ -97,6 +99,7 @@ model ClientProfile {
 
   intakes      Intake[]
   appointments Appointment[]
+  reviews      Review[] // Req 16
   // medical history is derived from intakes + summaries + session records
 }
 
@@ -185,6 +188,7 @@ model Appointment {
   createdAt       DateTime          @default(now())
 
   sessionRecord SessionRecord?
+  review        Review?
 }
 
 model SessionRecord {
@@ -197,4 +201,18 @@ model SessionRecord {
   plan           String
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+}
+
+model Review {
+  id              String        @id @default(uuid())
+  appointmentId   String        @unique // at most one review per appointment (Req 16.3)
+  appointment     Appointment   @relation(fields: [appointmentId], references: [id])
+  clientProfileId String
+  clientProfile   ClientProfile @relation(fields: [clientProfileId], references: [id])
+  professionalId  String
+  professional    Professional  @relation(fields: [professionalId], references: [id])
+  rating          Int // 1..5, validated (Req 16.1, 16.2)
+  text            String? // optional short review
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }

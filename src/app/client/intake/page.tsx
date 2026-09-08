@@ -7,6 +7,7 @@ import { dashboardPathForRole } from "@/lib/routes";
 import { stepForStatus } from "@/lib/intake-steps";
 import { fieldSpecsForType } from "@/lib/standard-fields";
 import { getCrossTypeSuggestion } from "@/lib/cross-type-suggestion";
+import { getProfessionalRating } from "@/lib/reviews";
 import { IntakeWizard, type WizardData } from "./IntakeWizard";
 
 export default async function IntakePage({
@@ -84,12 +85,15 @@ export default async function IntakePage({
         intake.description,
         professional.type,
       );
+      const rating = await getProfessionalRating(professional.id);
       data.match = {
         professionalId: professional.id,
         name: professional.name,
         type: professional.type,
         specialty: professional.specialty,
         bio: professional.bio,
+        avatarUrl: professional.avatarUrl,
+        rating: { average: rating.average, count: rating.count },
         rationale: intake.match.rationale,
         slots: professional.slots.map((s) => ({
           id: s.id,

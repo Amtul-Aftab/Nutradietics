@@ -64,7 +64,8 @@ Phase 11 (Deployment Setup)
     { "phase": 8, "tasks": ["8.1", "8.2", "8.3", "8.4", "8.5", "8.6", "8.7", "8.8", "8.9", "8.10", "8.11", "8.12", "8.13", "8.14", "8.15", "8.16"] },
     { "phase": 9, "tasks": ["9.1"] },
     { "phase": 10, "tasks": ["10.1", "10.2", "10.3", "10.4", "10.5", "10.6"] },
-    { "phase": 11, "tasks": ["11.1", "11.2", "11.3", "11.4"] }
+    { "phase": 11, "tasks": ["11.1", "11.2", "11.3", "11.4"] },
+    { "phase": 12, "tasks": ["12.1", "12.2", "12.3", "12.4"] }
   ]
 }
 ```
@@ -197,6 +198,15 @@ Key cross-phase dependencies:
 - [ ] 11.2 Provision the production PostgreSQL database and run Prisma migrations against it; verify connectivity from the deploy target.
 - [ ] 11.3 Configure the single-app host (build command, start command, env vars, Node version) and deploy the Next.js app.
 - [ ] 11.4 Post-deploy smoke test: sign-up (both roles), profile/service/slot creation, a full AI intake-to-booking journey, and the post-appointment diagnosis + medical-history flow against the deployed environment.
+
+### Phase 12: Profile Pictures & Reviews (Req 15, 16)
+
+> Two small post-launch enhancements. No admin approval, moderation, or document verification.
+
+- [ ] 12.1 Schema: add `Professional.avatarUrl` and a `Review` model (rating 1-5, optional text, unique per appointment, linked to client + professional); run the migration (Req 15, 16).
+- [ ] 12.2 Profile pictures: add a server-side Supabase Storage client (`SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`, `avatars` bucket) and `POST /professionals/me/avatar` (image-only, replaces prior photo); add the upload control to the profile editor (Req 15).
+- [ ] 12.3 Reviews: `POST /appointments/:id/review` (client-owned appointment, rating 1-5, one per appointment, upsert on repeat) and a `getProfessionalRating` average/count helper (Req 16.1-16.4).
+- [ ] 12.4 Display: show the avatar and average rating + review count on the professional's profile and in the AI match-result view; add the leave-a-review form on the client's appointments view; neutral placeholder / "no reviews yet" fallbacks (Req 15.4, 16.5, 16.6).
 
 ## Notes
 

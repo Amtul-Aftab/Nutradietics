@@ -9,6 +9,8 @@ import {
   type IntakeStep,
 } from "@/lib/intake-steps";
 import type { FieldSpec } from "@/lib/standard-fields";
+import { Avatar } from "@/components/Avatar";
+import { RatingBadge } from "@/components/RatingBadge";
 import { CrossTypeSuggestion } from "./CrossTypeSuggestion";
 
 interface QuestionData {
@@ -23,6 +25,8 @@ interface MatchData {
   type: "NUTRITIONIST" | "FITNESS_TRAINER";
   specialty: string;
   bio: string | null;
+  avatarUrl: string | null;
+  rating: { average: number | null; count: number };
   rationale: string;
   slots: { id: string; startsAt: string; endsAt: string }[];
   suggestion: { message: string; otherTypeLabel: string } | null;
@@ -466,12 +470,18 @@ function BookStep({ router, data }: StepProps) {
     <div>
       <h2>Your match</h2>
       <article className="browse__card">
-        <header>
-          <h2>{m.name}</h2>
-          <span className="slots__badge slots__badge--available">
-            {typeLabel(m.type)}
-          </span>
+        <header className="browse__card-header">
+          <Avatar url={m.avatarUrl} name={m.name} size={56} />
+          <div>
+            <h2>{m.name}</h2>
+            <span className="slots__badge slots__badge--available">
+              {typeLabel(m.type)}
+            </span>
+          </div>
         </header>
+        <p className="browse__rating">
+          <RatingBadge average={m.rating.average} count={m.rating.count} />
+        </p>
         <p className="browse__specialty">{m.specialty}</p>
         {m.bio && <p className="browse__bio">{m.bio}</p>}
         <h3>Why we matched you</h3>

@@ -215,3 +215,32 @@ The AI-driven professional-type classification, follow-up question generation, p
 3. WHEN the AI returns a response THEN the system SHALL validate its structure before using it and treat malformed output as a failure.
 4. WHERE AI output is displayed to users THEN the system SHALL treat the AI response as untrusted content and avoid executing or blindly trusting embedded instructions.
 5. WHERE client health data is sent to the AI API THEN the system SHALL send only the data needed for the task and SHALL handle it consistent with the client's medical history access restrictions.
+
+---
+
+## Requirement 15: Professional Profile Picture
+
+**User Story:** As a professional, I want to upload a profile photo, so that clients can put a face to my listing when browsing and reviewing matches.
+
+#### Acceptance Criteria
+1. WHEN a professional uploads an image file THEN the system SHALL store it in object storage and associate the resulting URL with their profile.
+2. IF the uploaded file is not an image THEN the system SHALL reject the upload and return a clear error.
+3. WHEN a professional uploads a new photo THEN the system SHALL replace any previous photo so that only a single current photo is associated.
+4. WHERE a professional has a profile photo THEN the system SHALL display it on their profile and in match/browse results; WHERE none exists THEN the system SHALL show a neutral placeholder.
+5. WHERE the system uploads to object storage THEN the system SHALL keep storage credentials server-side and SHALL NOT expose them to the client.
+6. There is no admin approval or document-verification workflow for the photo.
+
+---
+
+## Requirement 16: Professional Reviews and Ratings
+
+**User Story:** As a client, I want to leave a star rating and short review after an appointment, so that other clients can gauge a professional's quality.
+
+#### Acceptance Criteria
+1. WHERE a client has an appointment with a professional THEN the client SHALL be able to submit a rating of 1 to 5 stars and an optional short text review for that appointment.
+2. IF the rating is missing or outside the range 1 to 5 THEN the system SHALL reject the review and return a validation error.
+3. WHEN a client submits a review for an appointment THEN the system SHALL persist it associated with that appointment, client, and professional, and SHALL allow at most one review per appointment.
+4. WHEN a client submits a review for an appointment they already reviewed THEN the system SHALL update that review rather than create a duplicate.
+5. WHERE a professional has one or more reviews THEN the system SHALL display the average rating and the review count on the professional's profile and in match/browse results.
+6. WHERE a professional has no reviews THEN the system SHALL indicate that there are no reviews yet rather than showing a rating.
+7. There is no admin approval or moderation workflow for reviews.

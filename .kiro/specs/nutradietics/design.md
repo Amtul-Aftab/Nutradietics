@@ -157,9 +157,11 @@ model Professional {
   type      ProfessionalType            // Req 1.2, 2.4
   specialty String
   bio       String?
+  avatarUrl String?                      // Supabase Storage public URL (Req 15)
   services  Service[]
   slots     TimeSlot[]
   appointments Appointment[]
+  reviews   Review[]                     // Req 16
 }
 
 model ClientProfile {
@@ -169,6 +171,7 @@ model ClientProfile {
   name     String?
   intakes  Intake[]
   appointments Appointment[]
+  reviews  Review[]                    // Req 16
   // medical history is derived from intakes + summaries + session records
 }
 
@@ -258,6 +261,19 @@ model SessionRecord {
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 }
+
+model Review {
+  id              String        @id @default(uuid())
+  appointmentId   String        @unique      // at most one review per appointment (Req 16.3)
+  clientProfileId String
+  clientProfile   ClientProfile @relation(fields: [clientProfileId], references: [id])
+  professionalId  String
+  professional    Professional  @relation(fields: [professionalId], references: [id])
+  rating          Int                        // 1..5, validated (Req 16.1, 16.2)
+  text            String?                     // optional short review
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
 ```
 
 ### Standard intake fields (`Intake.standardFields` JSON shape)
@@ -339,6 +355,21 @@ callAi(task):
 
 ---
 
+## File Storage (Req 15)
+
+Professional profile photos are stored in **Supabase Storage** (a public `avatars` bucket), not in the database — the DB keeps only the resulting public URL in `Professional.avatarUrl`.
+
+- A server-side Supabase client is created with `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (service-role key kept server-side only, never exposed to the browser — Req 15.5).
+- The upload route validates the file is an image (by MIME type), uploads it under a per-professional key (e.g. `avatars/<professionalId>`), `upsert: true` so a new upload replaces the old one (single current photo, Req 15.3), and reads back the public URL to persist.
+- Display uses the stored URL directly; a neutral placeholder is shown when `avatarUrl` is null (Req 15.4).
+- No admin approval / verification (Req 15.6).
+
+### Reviews and ratings (Req 16)
+
+A `Review` row is keyed uniquely by `appointmentId` (at most one per appointment). `getProfessionalRating(professionalId)` returns `{ average, count }` via a Prisma aggregate over that professional's reviews; callers show "No reviews yet" when count is 0 (Req 16.6). Reviews require the client to own an appointment with the professional (gate (a): any appointment qualifies; no `COMPLETED` state machine). No moderation workflow (Req 16.7).
+
+---
+
 ## API Surface
 
 All routes are Next.js route handlers under `app/api/**`. Auth required except sign-up and the Auth.js sign-in endpoint. Role guards noted per route.
@@ -354,6 +385,7 @@ All routes are Next.js route handlers under `app/api/**`. Auth required except s
 - `POST /professionals/me/slots` — rejects overlap and past/invalid ranges (Req 4.2, 4.3).
 - `DELETE /professionals/me/slots/:id` — only if unbooked (Req 4.5).
 - `GET /professionals/me/schedule` — appointments against slots (Req 11.5).
+- `POST /professionals/me/avatar` — multipart image upload; validates content-type is an image, uploads to the Supabase Storage `avatars` bucket (server-side key), stores the public URL in `Professional.avatarUrl`, replacing any prior photo (Req 15).
 
 ### Client intake pipeline (Req 5–10) — client role
 - `POST /intakes` — create with description; validates min length (Req 5.2). → status DESCRIBED.
@@ -379,6 +411,10 @@ Summary generation timing: the summary is generated automatically at the match s
 
 ### Client self-view (Req 13.6) — client role
 - `GET /clients/me/medical-history` — client's full history.
+
+### Reviews (Req 16) — client role
+- `POST /appointments/:id/review` — client submits `{ rating (1..5), text? }` for an appointment they own; validates the rating range and one-review-per-appointment (upserts on repeat, Req 16.1–16.4). The professional is derived from the appointment.
+- Rating aggregates (average + count) are computed server-side via a `getProfessionalRating(professionalId)` helper and shown on the professional's profile and in match/browse results (Req 16.5, 16.6). No dedicated GET route is required — aggregates are loaded alongside professional data in the pages/match candidates that display them.
 
 ---
 
@@ -457,6 +493,7 @@ AI-dependent endpoints return a distinct retryable error shape so the frontend c
 - AI keys server-side only; the browser never calls the provider directly (Req 14.1).
 - Health data is sensitive: medical-history and summary endpoints are strictly ownership/appointment-gated (Req 10.4, 13.5), and only task-necessary data is sent to the AI provider (Req 14.5).
 - All AI-produced and client-produced free text is rendered as inert text to avoid injection (Req 14.4).
+- Supabase Storage service-role key is server-side only; the browser never receives it, and avatar uploads go through a server route (Req 15.5). Uploaded files are validated as images before storage.
 
 ---
 
@@ -501,3 +538,5 @@ This is a time-constrained build; automated test suites are out of scope. Correc
 | 12 Session record | SessionRecord model, author-only edit |
 | 13 Medical history | Derived read-model + access control |
 | 14 AI reliability/safety | AiClient wrapper, timeouts, schema validation |
+| 15 Profile picture | Professional.avatarUrl, Supabase Storage, avatar upload route |
+| 16 Reviews & ratings | Review model, review route, getProfessionalRating aggregate |
