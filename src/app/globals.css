@@ -1316,6 +1316,83 @@ a {
   }
 }
 
+/* --- Dots loader (general-purpose loading) --- */
+.dots {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.dots--inline {
+  gap: 4px;
+}
+
+.dots__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: dots-bounce 1.1s ease-in-out infinite;
+}
+
+.dots--inline .dots__dot {
+  width: 6px;
+  height: 6px;
+}
+
+/* teal -> coral wave, staggered */
+.dots__dot:nth-child(1) {
+  background: #064e4b;
+  animation-delay: 0s;
+}
+.dots__dot:nth-child(2) {
+  background: #0b625d;
+  animation-delay: 0.12s;
+}
+.dots__dot:nth-child(3) {
+  background: #5c9382;
+  animation-delay: 0.24s;
+}
+.dots__dot:nth-child(4) {
+  background: #d96545;
+  animation-delay: 0.36s;
+}
+
+.dots-loader {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.dots-loader__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* On buttons the dots inherit lighter treatment against the fill */
+.btn--primary .dots__dot,
+.btn--danger .dots__dot {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+@keyframes dots-bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-7px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dots__dot {
+    animation-duration: 2.4s;
+  }
+}
+
 /* --- Error banner --- */
 .error-banner {
   display: flex;

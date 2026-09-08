@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes } from "react";
-import { Spinner } from "./Spinner";
+import { DotsLoader } from "./DotsLoader";
 
 type Variant = "primary" | "secondary" | "danger";
 
@@ -27,7 +27,7 @@ export function Button({
       aria-busy={loading || undefined}
       {...rest}
     >
-      {loading && <Spinner size={16} inline />}
+      {loading && <DotsLoader inline />}
       <span>{children}</span>
     </button>
   );
