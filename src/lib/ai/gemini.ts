@@ -33,34 +33,59 @@ function timeoutMs(): number {
   return Number.isFinite(raw) && raw > 0 ? raw : DEFAULT_TIMEOUT_MS;
 }
 
-/** Lazily construct the client so the key is read server-side at call time (Req 14.1). */
-function getClient(): GoogleGenAI {
-  const apiKey = process.env.AI_API_KEY;
-  if (!apiKey) {
-    throw new AiUnavailableError("AI provider is not configured.");
-  }
+/**
+ * The configured API keys, in failover order. The primary (AI_API_KEY) is
+ * always tried first; AI_API_KEY_2 is an optional fallback used only when the
+ * primary is rate-limited (429). Empty/undefined keys are filtered out, so the
+ * app degrades gracefully to single-key behavior when only one is set.
+ */
+function apiKeys(): string[] {
+  return [process.env.AI_API_KEY, process.env.AI_API_KEY_2]
+    .map((k) => k?.trim())
+    .filter((k): k is string => Boolean(k));
+}
+
+/** Construct a client for a specific key (read server-side at call time, Req 14.1). */
+function clientForKey(apiKey: string): GoogleGenAI {
   return new GoogleGenAI({ apiKey });
 }
 
 /**
- * Shared resilience wrapper (Req 14.2, 14.3): enforces a timeout via
- * AbortController, requests structured JSON with a responseSchema, parses the
- * text, and hands the parsed value to a validator. Any failure becomes a
- * retryable AiUnavailableError.
+ * Detects a rate-limit failure. The @google/genai SDK throws an `ApiError`
+ * carrying a numeric `status`, so a 429 is the primary signal; we also match
+ * common rate-limit text as a defensive fallback for transport-layer variants.
  */
-async function callAi<T>(args: {
-  systemInstruction: string;
-  prompt: string;
-  responseSchema: Schema;
-  validate: (parsed: unknown) => T | null;
-}): Promise<T> {
-  const { systemInstruction, prompt, responseSchema, validate } = args;
+function isRateLimitError(error: unknown): boolean {
+  if (typeof error === "object" && error !== null) {
+    const status = (error as { status?: unknown }).status;
+    if (status === 429) return true;
+    const code = (error as { code?: unknown }).code;
+    if (code === 429) return true;
+  }
+  const message = error instanceof Error ? error.message : String(error);
+  return /\b429\b|rate limit|too many requests|resource_exhausted|quota/i.test(
+    message,
+  );
+}
+
+/**
+ * Performs a single Gemini generateContent call with the given key, under a
+ * timeout. Errors propagate raw so the caller can inspect them for failover;
+ * this function does not wrap them into AiUnavailableError.
+ */
+async function generateWithKey(
+  apiKey: string,
+  args: {
+    systemInstruction: string;
+    prompt: string;
+    responseSchema: Schema;
+  },
+): Promise<string | undefined> {
+  const { systemInstruction, prompt, responseSchema } = args;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs());
-
-  let text: string | undefined;
   try {
-    const client = getClient();
+    const client = clientForKey(apiKey);
     const response = await client.models.generateContent({
       model: MODEL,
       contents: prompt,
@@ -71,14 +96,59 @@ async function callAi<T>(args: {
         abortSignal: controller.signal,
       },
     });
-    text = response.text;
-  } catch (error) {
-    throw new AiUnavailableError(
-      "The AI request failed or timed out. Please try again.",
-      error,
-    );
+    return response.text;
   } finally {
     clearTimeout(timer);
+  }
+}
+
+/**
+ * Shared resilience wrapper (Req 14.2, 14.3): enforces a timeout via
+ * AbortController, requests structured JSON with a responseSchema, parses the
+ * text, and hands the parsed value to a validator. Any failure becomes a
+ * retryable AiUnavailableError.
+ *
+ * Automatic key failover: the call is attempted with the primary key first.
+ * If — and only if — it fails with a rate-limit error (429) and a second key
+ * (AI_API_KEY_2) is configured, the same request is retried once immediately
+ * with that key. Any non-429 error fails fast without burning the fallback
+ * key, and a 429 on the last available key surfaces as the retryable error.
+ */
+async function callAi<T>(args: {
+  systemInstruction: string;
+  prompt: string;
+  responseSchema: Schema;
+  validate: (parsed: unknown) => T | null;
+}): Promise<T> {
+  const { systemInstruction, prompt, responseSchema, validate } = args;
+
+  const keys = apiKeys();
+  if (keys.length === 0) {
+    throw new AiUnavailableError("AI provider is not configured.");
+  }
+
+  let text: string | undefined;
+  for (let i = 0; i < keys.length; i++) {
+    try {
+      text = await generateWithKey(keys[i], {
+        systemInstruction,
+        prompt,
+        responseSchema,
+      });
+      break;
+    } catch (error) {
+      // Only a rate-limit error justifies trying the next key; anything else
+      // (timeout, bad request, transport failure) fails immediately. If this
+      // was the last key, or the error isn't a 429, surface it as retryable.
+      const canFailover = isRateLimitError(error) && i < keys.length - 1;
+      if (!canFailover) {
+        throw new AiUnavailableError(
+          "The AI request failed or timed out. Please try again.",
+          error,
+        );
+      }
+      // else: fall through to retry with the next key.
+    }
   }
 
   if (!text) {
