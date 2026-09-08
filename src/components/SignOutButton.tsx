@@ -7,7 +7,7 @@ export function SignOutButton() {
   return (
     <Button
       variant="secondary"
-      onClick={() => signOut({ redirectTo: "/signin" })}
+      onClick={() => signOut({ redirectTo: "/" })}
     >
       Sign out
     </Button>
