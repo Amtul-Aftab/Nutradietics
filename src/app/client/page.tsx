@@ -17,6 +17,7 @@ export default async function ClientDashboardPage() {
       <p>Welcome, {session.user.email}.</p>
       <nav className="dashboard__links">
         <Link href="/client/intake">Get matched</Link>
+        <Link href="/client/appointments">Your appointments</Link>
         <Link href="/client/history">Medical history</Link>
       </nav>
     </main>

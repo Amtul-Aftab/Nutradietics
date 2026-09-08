@@ -132,6 +132,7 @@ enum Gender          { MALE  FEMALE  OTHER  UNSPECIFIED }
 enum IntakeStatus    { DESCRIBED  CLASSIFIED  FIELDS_COLLECTED  QUESTIONS_READY  ANSWERED  MATCHED  BOOKED }
 enum SlotStatus      { AVAILABLE  BOOKED  REMOVED }
 enum AppointmentStatus { CONFIRMED  COMPLETED  CANCELLED }
+enum PaymentStatus    { PENDING  PAID }
 ```
 
 ### Core tables
@@ -241,6 +242,8 @@ model Appointment {
   professionalId   String
   timeSlotId       String            @unique
   status           AppointmentStatus @default(CONFIRMED)
+  meetingLink      String?           // professional-set video call URL (Req 11.6)
+  paymentStatus    PaymentStatus     @default(PENDING) // off-platform payment (Req 11.7)
   createdAt        DateTime          @default(now())
 
   sessionRecord    SessionRecord?
@@ -372,6 +375,7 @@ Summary generation timing: the summary is generated automatically at the match s
 - `GET /appointments/:id/summary` — patient summary + underlying intake data; only the matched professional (Req 10.2–10.4).
 - `GET /clients/:clientId/medical-history` — allowed only if the professional has a booked appointment with that client (Req 13.2, 13.5); chronological (Req 13.4).
 - `POST /appointments/:id/session-record` / `PUT` — professional-entered diagnosis + plan; required fields validated; author-only edit (Req 12).
+- `PATCH /appointments/:id` — professional sets the meeting link and/or payment status on their own appointment (Req 11.6, 11.7); both are shown to the client and professional.
 
 ### Client self-view (Req 13.6) — client role
 - `GET /clients/me/medical-history` — client's full history.

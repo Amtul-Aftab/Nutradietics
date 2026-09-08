@@ -7,6 +7,7 @@ import { dashboardPathForRole } from "@/lib/routes";
 import { getMedicalHistory } from "@/lib/medical-history";
 import { MedicalHistoryTimeline } from "@/components/MedicalHistoryTimeline";
 import { SessionRecordForm } from "./SessionRecordForm";
+import { AppointmentDetailsForm } from "./AppointmentDetailsForm";
 
 function formatRange(startsAt: Date, endsAt: Date): string {
   const date = startsAt.toLocaleDateString(undefined, {
@@ -72,6 +73,19 @@ export default async function AppointmentDetailPage({
         <p>
           <strong>Status:</strong> {appointment.status}
         </p>
+      </section>
+
+      <section>
+        <h2>Meeting &amp; payment</h2>
+        <p className="appointment__hint">
+          Add the video call link and mark payment (arranged off-platform).
+          Both are visible to the client.
+        </p>
+        <AppointmentDetailsForm
+          appointmentId={appointment.id}
+          initialMeetingLink={appointment.meetingLink ?? ""}
+          initialPaymentStatus={appointment.paymentStatus}
+        />
       </section>
 
       <section>

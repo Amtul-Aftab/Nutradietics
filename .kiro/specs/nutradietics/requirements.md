@@ -172,6 +172,8 @@ The AI-driven professional-type classification, follow-up question generation, p
 3. IF the selected slot was booked by another client before confirmation THEN the system SHALL reject the booking and prompt the client to choose another slot.
 4. WHEN an appointment is confirmed THEN the system SHALL record it for both the client and the professional and display a confirmation to the client.
 5. WHEN a professional views their schedule THEN the system SHALL display appointments booked against their slots.
+6. WHERE an appointment exists THEN the professional SHALL be able to set a meeting link (a video call URL for an off-platform call), and the system SHALL display that link to both the client and the professional.
+7. WHERE an appointment exists THEN the system SHALL track a payment status of either pending or paid (representing payment arranged outside the platform, with no in-app payment processing); only the professional SHALL be able to change it, and the status SHALL be visible to both the client and the professional.
 
 ---
 

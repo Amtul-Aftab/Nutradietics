@@ -63,7 +63,7 @@ Phase 11 (Deployment Setup)
     { "phase": 7, "tasks": ["7.1", "7.2"] },
     { "phase": 8, "tasks": ["8.1", "8.2", "8.3", "8.4", "8.5", "8.6", "8.7", "8.8", "8.9", "8.10", "8.11", "8.12", "8.13", "8.14", "8.15", "8.16"] },
     { "phase": 9, "tasks": ["9.1"] },
-    { "phase": 10, "tasks": ["10.1", "10.2", "10.3", "10.4", "10.5"] },
+    { "phase": 10, "tasks": ["10.1", "10.2", "10.3", "10.4", "10.5", "10.6"] },
     { "phase": 11, "tasks": ["11.1", "11.2", "11.3", "11.4"] }
   ]
 }
@@ -189,6 +189,7 @@ Key cross-phase dependencies:
 
   > Note: the four temporary `/api/ai-test/*` verification routes were removed in this phase. `/client/browse` now redirects to `/client/intake` (its final step is the AI match-result view). Task 10.4 is a manual browser walkthrough for the user to confirm.
 - [x] 10.5 Add a UI-only cross-type suggestion on the match-result and confirmation views: when the client's description suggests a dual-benefit goal, show a supportive message and a button that starts a new independent intake for the other professional type. No change to classification or the data model (Req 9.8).
+- [x] 10.6 Add appointment meeting link and payment status: `meetingLink` (text) and `paymentStatus` (PENDING/PAID) on `Appointment`; `PATCH /appointments/:id` lets the owning professional set the link and toggle payment; both are shown to the client (a `/client/appointments` view) and the professional (Req 11.6, 11.7).
 
 ### Phase 11: Deployment Setup
 
