@@ -28,15 +28,9 @@ function SignInForm() {
     });
 
     if (!res || res.error) {
-      if (res?.code === "unverified") {
-        // Password was correct but the email isn't verified yet (Req 17).
-        setError(
-          "Please verify your email first. Check your inbox for the verification link.",
-        );
-      } else {
-        // Generic message — do not reveal which field was wrong (Req 1.5).
-        setError("Invalid email or password.");
-      }
+      // Generic message — do not reveal which field was wrong (Req 1.5).
+      // Email verification is non-blocking, so there is no "unverified" case.
+      setError("Invalid email or password.");
       setSubmitting(false);
       return;
     }
