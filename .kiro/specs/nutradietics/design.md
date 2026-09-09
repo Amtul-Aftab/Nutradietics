@@ -18,6 +18,22 @@ The requirements are stack-agnostic; this design picks a concrete stack consiste
 
 ---
 
+## Key Design Decisions & Trade-offs
+
+Significant scope decisions made during the build, with the reasoning behind each.
+
+- **AI classification returns exactly one professional type, never "both."** Each intake is classified as either nutritionist or fitness trainer, not a combination. This keeps the matching and intake logic single-path and easier to test, at the cost of not modeling clients whose needs span both types (a cross-type suggestion is surfaced instead of dual matching).
+
+- **Medical report input is text-only; no file uploads or file storage.** Clients paste report summaries as text rather than uploading documents. This kept the intake flow simple and fast to build and avoided introducing document storage, parsing, and handling of sensitive files.
+
+- **Payment status is a manual pending/paid toggle, not real payment processing.** The professional marks an appointment paid or pending by hand; there is no payment gateway, charges, or reconciliation. This kept scope focused on the AI-driven matching core rather than building payment infrastructure.
+
+- **Email verification is implemented but non-blocking.** Signup issues and sends a verification link, and verifying sets `emailVerified`, but sign-in does not require it. This was originally built as a blocking gate; testing revealed that Resend's sandbox mode only delivers to the account owner's address without a verified sending domain, so blocking sign-in would have locked out real users. The gate was removed while keeping the verification flow intact.
+
+- **Automatic multi-key AI failover (two then three keys).** The AI adapter rotates across multiple provider keys and falls through them on rate-limit (429) errors. This was added after hitting Gemini's daily rate limit during testing, to keep the AI pipeline reliable and spread quota usage across keys.
+
+---
+
 ## Architecture
 
 ### High-level components
