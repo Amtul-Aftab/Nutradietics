@@ -34,16 +34,27 @@ function timeoutMs(): number {
 }
 
 /**
- * The configured API keys, in failover order. The primary (AI_API_KEY) is
- * always tried first; AI_API_KEY_2 is an optional fallback used only when the
- * primary is rate-limited (429). Empty/undefined keys are filtered out, so the
- * app degrades gracefully to single-key behavior when only one is set.
+ * The configured API keys (AI_API_KEY, AI_API_KEY_2, AI_API_KEY_3). Empty /
+ * undefined keys are filtered out, so the app degrades gracefully to fewer
+ * keys (or single-key behavior) when not all are set. The order here is the
+ * fallback order within a single call; the *starting* key rotates per call
+ * (see callAi round-robin) to spread quota usage evenly across keys.
  */
 function apiKeys(): string[] {
-  return [process.env.AI_API_KEY, process.env.AI_API_KEY_2]
+  return [
+    process.env.AI_API_KEY,
+    process.env.AI_API_KEY_2,
+    process.env.AI_API_KEY_3,
+  ]
     .map((k) => k?.trim())
     .filter((k): k is string => Boolean(k));
 }
+
+// Round-robin cursor: advances once per AI call so each new call starts with a
+// different key, spreading daily quota usage evenly instead of always hitting
+// key 1 first. Module-scoped (per server instance); exact fairness across
+// serverless instances isn't required — the goal is even-ish distribution.
+let roundRobinCursor = 0;
 
 /** Construct a client for a specific key (read server-side at call time, Req 14.1). */
 function clientForKey(apiKey: string): GoogleGenAI {
@@ -108,11 +119,12 @@ async function generateWithKey(
  * text, and hands the parsed value to a validator. Any failure becomes a
  * retryable AiUnavailableError.
  *
- * Automatic key failover: the call is attempted with the primary key first.
- * If — and only if — it fails with a rate-limit error (429) and a second key
- * (AI_API_KEY_2) is configured, the same request is retried once immediately
- * with that key. Any non-429 error fails fast without burning the fallback
- * key, and a 429 on the last available key surfaces as the retryable error.
+ * Automatic key failover with round-robin (AI_API_KEY, AI_API_KEY_2,
+ * AI_API_KEY_3): each new call starts with a different key (rotating cursor)
+ * to spread quota usage evenly. If — and only if — that call fails with a
+ * rate-limit error (429), the request falls through the remaining keys in
+ * order until one succeeds. Any non-429 error fails fast without burning the
+ * other keys, and a 429 on the last-tried key surfaces as the retryable error.
  */
 async function callAi<T>(args: {
   systemInstruction: string;
@@ -127,10 +139,15 @@ async function callAi<T>(args: {
     throw new AiUnavailableError("AI provider is not configured.");
   }
 
+  // Rotate the starting key per call, then fall through the rest in order.
+  const start = roundRobinCursor % keys.length;
+  roundRobinCursor = (roundRobinCursor + 1) % keys.length;
+
   let text: string | undefined;
   for (let i = 0; i < keys.length; i++) {
+    const key = keys[(start + i) % keys.length];
     try {
-      text = await generateWithKey(keys[i], {
+      text = await generateWithKey(key, {
         systemInstruction,
         prompt,
         responseSchema,
@@ -139,7 +156,8 @@ async function callAi<T>(args: {
     } catch (error) {
       // Only a rate-limit error justifies trying the next key; anything else
       // (timeout, bad request, transport failure) fails immediately. If this
-      // was the last key, or the error isn't a 429, surface it as retryable.
+      // was the last key to try, or the error isn't a 429, surface it as
+      // retryable.
       const canFailover = isRateLimitError(error) && i < keys.length - 1;
       if (!canFailover) {
         throw new AiUnavailableError(
@@ -147,7 +165,7 @@ async function callAi<T>(args: {
           error,
         );
       }
-      // else: fall through to retry with the next key.
+      // else: fall through to retry with the next key in the rotation.
     }
   }
 

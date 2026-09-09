@@ -367,6 +367,7 @@ callAi(task):
 - Keys are read from server-side environment only (Req 14.1).
 - Only task-necessary fields are sent to the provider (Req 14.5) — e.g. matching sends service descriptions and intake data but not the client's identity beyond what's needed.
 - AI text is stored and later rendered as inert text (Req 14.4).
+- **Multi-key round-robin failover (Req 14.6):** up to three keys (`AI_API_KEY`, `AI_API_KEY_2`, `AI_API_KEY_3`) may be configured. `callAi` rotates the *starting* key per call (a module-level cursor) so quota usage spreads evenly across keys; on a rate-limit (HTTP 429) from the first-tried key it falls through the remaining keys in order until one succeeds. A non-429 error fails fast without trying other keys, and a 429 on the last-tried key surfaces the retryable `AiUnavailableError`. This is internal to the adapter and transparent to the four `AiClient` methods; it degrades gracefully to fewer/single key.
 
 ---
 
