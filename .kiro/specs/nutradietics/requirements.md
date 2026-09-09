@@ -248,21 +248,21 @@ The AI-driven professional-type classification, follow-up question generation, p
 
 ---
 
-## Requirement 17: Blocking Email Verification
+## Requirement 17: Optional (Non-Blocking) Email Verification
 
-**User Story:** As the platform operator, I want new users to verify their email address before they can sign in, so that every active account has a confirmed, reachable email.
+**User Story:** As a new user, I want to verify my email address after signing up, so that I can confirm ownership of my email — without being blocked from using the app if the verification email doesn't reach me.
 
-**Email verification is BLOCKING and REQUIRED.** Users cannot log in until they verify their email address. The verification email is sent via Resend and its link is valid for 24 hours. Existing accounts created before this requirement were backfilled to `emailVerified = true` so they are not locked out.
+**Email verification is OPTIONAL and NON-BLOCKING.** Users CAN sign in whether or not they have verified their email; the login flow does NOT check `emailVerified`. A verification email is still issued and sent best-effort via Resend (link valid for 24 hours), and verifying still sets `emailVerified = true`, but nothing gates access on it. This decision was made because the Resend sandbox sender only delivers to the account owner's address, so a blocking check would permanently lock out anyone signing up with a different email until a verified sending domain is configured.
 
 #### Acceptance Criteria
 1. WHEN a user account is created THEN the system SHALL initialize `User.emailVerified` to false and SHALL issue a single-use verification token (32 characters) that expires 24 hours after creation.
-2. WHEN an account is created THEN the system SHALL send a verification email (via Resend) containing a link to the verification endpoint, and SHALL set a short-lived (24h), signed, HttpOnly `_verifySessionId` cookie carrying only the new user's id, and SHALL redirect the user to a `/verify-email-pending` page (the email is conveyed via the signed cookie session, never in the URL).
-3. WHEN a user attempts to sign in AND their `emailVerified` is not true THEN the system SHALL reject the login with a message directing them to verify their email; the verification check SHALL occur only after the password is confirmed, so it does not reveal account/verification state for an incorrect password. An account CANNOT be used until verified.
+2. WHEN an account is created THEN the system SHALL send a verification email (via Resend, best-effort) containing a link to the verification endpoint, and SHALL set a short-lived (24h), signed, HttpOnly `_verifySessionId` cookie carrying only the new user's id, and SHALL redirect the user to a `/verify-email-pending` page (the email is conveyed via the signed cookie session, never in the URL). IF the email send fails THEN the system SHALL log it and STILL complete signup.
+3. Email verification SHALL be OPTIONAL and NON-BLOCKING: an unverified user SHALL retain full ability to sign in and use the app. The sign-in flow (Auth.js `authorize()`) SHALL NOT check `emailVerified`.
 4. WHEN a user opens the verification link with a valid, unexpired token THEN the system SHALL set `User.emailVerified` to true, consume (delete) the token, clear the `_verifySessionId` cookie, and redirect to the sign-in page with a success indication ("Email verified! You can now sign in.").
 5. IF the token is missing, unknown, or expired THEN the system SHALL return a 400 error and SHALL NOT change any account state.
-6. WHILE on the `/verify-email-pending` page (unauthenticated) THEN the system SHALL display the pending email (from the signed cookie session), SHALL poll verification status every 5 seconds via `GET /api/check-verification`, and SHALL auto-redirect to sign-in once verified; the page SHALL offer a "Resend verification email" action.
+6. WHILE on the `/verify-email-pending` page (unauthenticated) THEN the system SHALL display the pending email (from the signed cookie session), SHALL poll verification status every 5 seconds via `GET /api/check-verification`, and SHALL auto-redirect to sign-in once verified; the page SHALL offer a "Resend verification email" action. NOTE: since verification is non-blocking, a user may also simply proceed to sign in without waiting.
 7. WHERE `GET /api/check-verification` or the resend action is called THEN the system SHALL identify the user solely from the signed `_verifySessionId` cookie and SHALL return a generic result when the cookie is missing/invalid (no account enumeration).
-8. WHERE the verification email is sent THEN the provider API key SHALL be kept server-side and SHALL NOT be exposed to the client. NOTE: `RESEND_API_KEY` must be configured for the signup → verify → sign-in flow to work end-to-end; without it the send is skipped and unverified users cannot sign in.
+8. WHERE the verification email is sent THEN the provider API key SHALL be kept server-side and SHALL NOT be exposed to the client. NOTE: `RESEND_API_KEY` must be configured for verification emails to actually deliver; without it (or with the Resend sandbox sender) delivery is limited, but signup and sign-in still work because verification is non-blocking.
 
 ---
 
