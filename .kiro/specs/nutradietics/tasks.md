@@ -220,6 +220,64 @@ Key cross-phase dependencies:
 - [x] 12.3 Reviews: `POST /appointments/:id/review` (client-owned appointment, rating 1-5, one per appointment, upsert on repeat) and a `getProfessionalRating` average/count helper (Req 16.1-16.4).
 - [x] 12.4 Display: show the avatar and average rating + review count on the professional's profile and in the AI match-result view; add the leave-a-review form on the client's appointments view; neutral placeholder / "no reviews yet" fallbacks (Req 15.4, 16.5, 16.6).
 
+### Phase 13: Bonus Features (Health Calculator, Email Confirmation, Landing Page Enhancements)
+
+- [x] 13.1 Build /health-calculator as a public route accessible to authenticated professionals (Req 18):
+
+  - Input form: age, weight, height, gender, activity level, optional waist/hip circumferences
+
+  - Calculations: BMR (Mifflin-St Jeor), TDEE (activity-factor adjusted), EER, WHR, WHtR, body fat % (Deurenberg), FFMI, FMI
+
+  - Display: card-based results with labels, values, and health categories
+
+  - Stateless (no DB storage)
+
+  - Include disclaimer about estimates and recommending professional advice
+
+  
+
+- [x] 13.2 Add booking confirmation emails (Resend):
+
+  - POST /appointments triggers email send after booking succeeds
+
+  - Send TWO emails: one to client, one to professional
+
+  - Include appointment details (date/time, professional/client name, service, meeting link if set)
+
+  - Best-effort (no blocking on email failure)
+
+- [x] 13.3 Enhance medical data display:
+
+  - Format Intake.standardFields JSON as readable labeled rows (Age, Weight, Height, Gender, Activity Level, etc.)
+
+  - Calculate and display BMI alongside standard fields (formula: weight / (height/100)^2) with category
+
+  - Fix text overflow in medical history timeline, summaries, and appointment details
+
+  - Consistent card layout and typography across all medical-history views
+
+- [x] 13.4 Enhance landing page (/):
+
+  - Add "Featured Professionals" section (3-5 random professionals with name, type, specialty, service price)
+
+  - Add "View profile" links to public professional profile pages
+
+  - Add dedicated CTA footer ("Ready to get started?" with "Get started" button)
+
+- [x] 13.5 Add public professional profile pages:
+
+  - Create /professionals/[id] (unauthenticated)
+
+  - Display: name, type, specialty, bio, services (with prices), available slots
+
+  - "Book appointment" button -> /client/intake if logged in, /signup if not
+
+- [x] 13.6 Add header navigation link:
+
+  - Show "Health calculator" link in professional-only nav (logged-in professionals only)
+
+  - Links to /health-calculator
+
 ## Notes
 
 - **Sequencing rationale.** The core marketplace (Phases 0-5) is built and verified end-to-end before any AI work begins. The four AI calls (Phase 8) are each implemented and verified in isolation before Phase 10 wires them into a single resumable client journey.

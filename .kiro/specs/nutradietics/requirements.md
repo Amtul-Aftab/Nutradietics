@@ -263,3 +263,39 @@ The AI-driven professional-type classification, follow-up question generation, p
 6. WHILE on the `/verify-email-pending` page (unauthenticated) THEN the system SHALL display the pending email (from the signed cookie session), SHALL poll verification status every 5 seconds via `GET /api/check-verification`, and SHALL auto-redirect to sign-in once verified; the page SHALL offer a "Resend verification email" action.
 7. WHERE `GET /api/check-verification` or the resend action is called THEN the system SHALL identify the user solely from the signed `_verifySessionId` cookie and SHALL return a generic result when the cookie is missing/invalid (no account enumeration).
 8. WHERE the verification email is sent THEN the provider API key SHALL be kept server-side and SHALL NOT be exposed to the client. NOTE: `RESEND_API_KEY` must be configured for the signup → verify → sign-in flow to work end-to-end; without it the send is skipped and unverified users cannot sign in.
+
+---
+
+## Requirement 18: Health Metrics Calculator
+
+**User Story:** As a professional, I want access to a health metrics calculator tool, so that I can quickly assess and understand a client's metabolic and body composition baseline.
+
+#### Acceptance Criteria
+
+1. WHEN an authenticated professional accesses /health-calculator THEN the system SHALL display a public health metrics calculator tool.
+
+2. WHEN a professional enters age, weight, height, gender, and activity level THEN the system SHALL calculate and display:
+
+   - BMR (Basal Metabolic Rate) using the Mifflin-St Jeor formula, in kcal/day
+
+   - TDEE (Total Daily Energy Expenditure) by multiplying BMR by an activity factor, in kcal/day
+
+   - EER (Estimated Energy Requirement), equal to TDEE, in kcal/day
+
+   - WHR (Waist-to-Hip Ratio) if waist and hip circumferences are provided, with health category (good/at risk/high risk)
+
+   - WHtR (Waist-to-Height Ratio) if waist circumference is provided, with health category (healthy/overweight/obese)
+
+   - Body fat percentage estimate using the Deurenberg equation (age/gender-adjusted BMI-based estimate), with category ranges
+
+   - FFMI (Fat-Free Mass Index) and FMI (Fat Mass Index), derived from body fat percentage
+
+3. WHERE a required field is missing or invalid THEN the system SHALL prevent calculation and indicate the error.
+
+4. WHEN a calculation is complete THEN the system SHALL display all metrics in a clean card layout with labels, values, and interpretive categories.
+
+5. WHEN a professional clicks "Reset" THEN the system SHALL clear the form and all displayed results.
+
+6. WHERE the calculator is displayed THEN the system SHALL include a disclaimer: "These calculations are estimates. For personalized health advice, consult with a qualified healthcare professional."
+
+7. WHERE the health calculator is accessed THEN the system SHALL NOT store any input data or results; all calculations are stateless and client-side only.

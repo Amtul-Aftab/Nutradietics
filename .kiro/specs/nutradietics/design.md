@@ -434,6 +434,46 @@ Summary generation timing: the summary is generated automatically at the match s
 
 ---
 
+## Health Metrics Calculator (Req 18)
+
+A stateless, public health assessment tool accessible to authenticated professionals at `/health-calculator`.
+
+### Design
+
+- **Route:** `/health-calculator` (public, requires professional authentication)
+
+- **Architecture:** Client-side React form + pure math module (no API calls, no DB storage)
+
+- **Input validation:** Positive numbers required; waist/hip optional
+
+- **Calculations module** `src/lib/health-calculator.ts`):
+
+  - BMR (Mifflin-St Jeor): separate formulas for male/female, accounts for age
+
+  - TDEE: BMR × activity factor (Sedentary 1.2, Lightly active 1.375, Moderately active 1.55, Very active 1.725, Extremely active 1.9)
+
+  - EER: equals TDEE
+
+  - WHR: waist / hip, with thresholds for good/at-risk/high-risk by gender
+
+  - WHtR: waist / height, with thresholds for healthy/overweight/obese
+
+  - Body fat %: Deurenberg equation `BF% = 1.20×BMI + 0.23×age − 10.8×sex − 5.4`), clamped to 2–60%
+
+  - FFMI / FMI: derived from body fat %, height, weight
+
+- **Output:** Card-based display of all metrics with labels, values, and health categories
+
+- **Data persistence:** None (stateless, calculations discarded on page reload)
+
+- **UI state:** Form inputs + calculated results; reset button clears both
+
+- **Disclaimer:** "These calculations are estimates. For personalized health advice, consult with a qualified healthcare professional."
+
+This tool is reference-only for professionals; no client data is stored or linked to appointments.
+
+---
+
 ## Key Flows
 
 ### Booking race condition (Req 11.3)
