@@ -446,7 +446,7 @@ A stateless, public health assessment tool accessible to authenticated professio
 
 - **Input validation:** Positive numbers required; waist/hip optional
 
-- **Calculations module** `src/lib/health-calculator.ts`):
+- **Calculations module** (`src/lib/calculations.ts`):
 
   - BMR (Mifflin-St Jeor): separate formulas for male/female, accounts for age
 
