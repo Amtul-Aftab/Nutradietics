@@ -284,6 +284,138 @@ a {
   line-height: 1.6;
 }
 
+/* --- Featured professionals (homepage) --- */
+.featured {
+  margin-top: 64px;
+}
+
+.featured__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+}
+
+.featured__card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.featured__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.featured__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.featured__meta strong {
+  color: var(--teal);
+}
+
+.featured__type {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.featured__specialty {
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.featured__price {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--coral-dark);
+}
+
+.featured__link {
+  margin-top: auto;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--coral-dark);
+}
+
+.featured__link:hover {
+  text-decoration: underline;
+}
+
+/* --- Landing CTA footer --- */
+.cta-footer {
+  margin-top: 64px;
+  padding: 40px 24px;
+  text-align: center;
+  background: var(--sage);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.cta-footer h2 {
+  font-size: 26px;
+  color: var(--teal);
+}
+
+.cta-footer p {
+  color: var(--muted);
+}
+
+/* --- Public professional profile services --- */
+.profile-services {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.profile-services__item {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  background: var(--white);
+}
+
+.profile-services__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.profile-services__price {
+  font-weight: 600;
+  color: var(--coral-dark);
+  white-space: nowrap;
+}
+
+.profile-services__desc {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: var(--space-1);
+  overflow-wrap: anywhere;
+}
+
+.profile-book {
+  margin-top: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+
 /* --- Footer --- */
 .site-footer {
   margin-top: 64px;

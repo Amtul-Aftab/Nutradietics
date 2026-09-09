@@ -1,11 +1,53 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { humanizeEnum } from "@/lib/format";
+import { formatPkr } from "@/lib/currency";
+import { Avatar } from "@/components/Avatar";
 
 export const metadata: Metadata = {
   title: "Find nutrition & fitness support",
 };
 
-export default function HomePage() {
+// Public landing page. Reads fresh so featured professionals reflect the
+// current roster; no auth required.
+export const dynamic = "force-dynamic";
+
+/** Pick up to `n` random items from a list (Fisher-Yates partial shuffle). */
+function pickRandom<T>(items: T[], n: number): T[] {
+  const arr = [...items];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr.slice(0, n);
+}
+
+export default async function HomePage() {
+  const session = await auth();
+  const getStartedHref = session?.user ? "/client/intake" : "/signup";
+
+  // Feature a handful of professionals who have at least one active service
+  // (so we can show a real starting price). Random selection each load.
+  const candidates = await prisma.professional.findMany({
+    where: { services: { some: { active: true } } },
+    select: {
+      id: true,
+      name: true,
+      type: true,
+      specialty: true,
+      avatarUrl: true,
+      services: {
+        where: { active: true },
+        select: { priceCents: true },
+        orderBy: { priceCents: "asc" },
+        take: 1,
+      },
+    },
+  });
+  const featured = pickRandom(candidates, 5);
+
   return (
     <div className="home">
       <section className="hero">
@@ -17,7 +59,7 @@ export default function HomePage() {
             nutrition and fitness professionals who fit your goals, schedule,
             and needs.
           </p>
-          <Link href="/client/intake" className="btn btn--primary">
+          <Link href={getStartedHref} className="btn btn--primary">
             Get started
           </Link>
           <div className="hero__trust">
@@ -86,6 +128,53 @@ export default function HomePage() {
             </p>
           </article>
         </div>
+      </section>
+
+      {featured.length > 0 && (
+        <section className="featured">
+          <p className="why__eyebrow">Featured professionals</p>
+          <h2 className="why__title">Meet a few of our professionals</h2>
+          <div className="featured__grid">
+            {featured.map((p) => {
+              const startingPrice = p.services[0]?.priceCents ?? null;
+              return (
+                <article key={p.id} className="featured__card">
+                  <div className="featured__head">
+                    <Avatar url={p.avatarUrl} name={p.name} size={52} />
+                    <div className="featured__meta">
+                      <strong>{p.name}</strong>
+                      <span className="featured__type">
+                        {humanizeEnum(p.type)}
+                      </span>
+                    </div>
+                  </div>
+                  {p.specialty && (
+                    <p className="featured__specialty">{p.specialty}</p>
+                  )}
+                  {startingPrice != null && (
+                    <p className="featured__price">
+                      From {formatPkr(startingPrice)}
+                    </p>
+                  )}
+                  <Link
+                    href={`/professionals/${p.id}`}
+                    className="featured__link"
+                  >
+                    View profile
+                  </Link>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      <section className="cta-footer">
+        <h2>Ready to get started?</h2>
+        <p>Find your perfect match today</p>
+        <Link href={getStartedHref} className="btn btn--primary">
+          Get started
+        </Link>
       </section>
 
       <footer className="site-footer">
