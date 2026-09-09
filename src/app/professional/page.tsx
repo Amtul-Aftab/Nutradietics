@@ -8,6 +8,8 @@ import { getProfessionalRating } from "@/lib/reviews";
 import { humanizeEnum } from "@/lib/format";
 import { Avatar } from "@/components/Avatar";
 import { RatingBadge } from "@/components/RatingBadge";
+import { ProfessionalDashboardStats } from "@/components/ProfessionalDashboardStats";
+import { UpcomingAppointments } from "@/components/UpcomingAppointments";
 
 // Always read fresh from the DB so profile edits (e.g. professional type)
 // reflect immediately, rather than showing the stale value baked into the JWT.
@@ -53,6 +55,17 @@ export default async function ProfessionalDashboardPage() {
     <main className="dashboard">
       <p className="dashboard__eyebrow">Professional workspace</p>
       <h1>Welcome back, {displayName}</h1>
+
+      {/* New additive widgets (placed above existing content). */}
+      {professional && (
+        <>
+          <ProfessionalDashboardStats professionalId={professional.id} />
+          <UpcomingAppointments
+            professionalId={professional.id}
+            professionalType={professional.type}
+          />
+        </>
+      )}
 
       {professional && (
         <section className="profile-snippet">
