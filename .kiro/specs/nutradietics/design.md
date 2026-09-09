@@ -143,7 +143,7 @@ model User {
   email         String   @unique
   passwordHash  String
   role          Role
-  emailVerified Boolean  @default(false) // REQUIRED before sign-in (Req 17, blocking)
+  emailVerified Boolean  @default(false) // set true via /api/verify-email; optional, non-blocking (Req 17)
   createdAt     DateTime @default(now())
 
   professional  Professional?   // set when role = PROFESSIONAL
@@ -151,9 +151,10 @@ model User {
   verificationTokens VerificationToken[]
 }
 
-// Single-use, 24h email verification tokens (Req 17). Blocking flow: signup
-// issues one and emails a link; /api/verify-email consumes it. Sign-in is
-// rejected until emailVerified is true (checked in the Auth.js authorize()).
+// Single-use, 24h email verification tokens (Req 17). Non-blocking flow:
+// signup issues one and emails a link; /api/verify-email consumes it and sets
+// emailVerified. Sign-in does NOT check emailVerified — verification is
+// optional and never blocks access.
 model VerificationToken {
   id        String   @id @default(uuid())
   token     String   @unique
@@ -392,7 +393,7 @@ All routes are Next.js route handlers under `app/api/**`. Auth required except s
 - `POST /api/auth/signup` — custom route handler; body includes role; if role=professional, `professionalType` required (Req 1.2). Creates the user + role profile and rejects duplicate email with a generic error (Req 1.3). Issues a single-use email verification token in the same transaction, sends the Resend email after commit, sets a short-lived signed HttpOnly `_verifySessionId` cookie (user id only), and redirects to `/verify-email-pending` (Req 17.1, 17.2).
 - `GET/POST /api/verify-email?token=…` — consumes a valid, unexpired verification token: sets `User.emailVerified = true`, deletes the token, clears the `_verifySessionId` cookie, and redirects to `/signin?verified=true`; invalid/expired tokens return 400 (Req 17.4, 17.5). `GET` serves the emailed link (clicks are GET); `POST` shares the same logic.
 - `GET /api/check-verification` / `POST /api/resend-verification` (unauthenticated) — identify the user solely from the signed `_verifySessionId` cookie; the first returns `{ emailVerified }` for the pending page's 5s poll, the second re-sends a fresh token/email. Both return a generic result when the cookie is missing/invalid (no enumeration) (Req 17.6, 17.7).
-- **Email verification is BLOCKING (Req 17.3):** login is handled by **Auth.js** Credentials at `/api/auth/*`; its `authorize()` rejects sign-in when `emailVerified` is not true (checked only after the password is confirmed) via an `UnverifiedEmailError` (`code: "unverified"`) surfaced on the sign-in page. Generic error on bad credentials (Req 1.4, 1.5); sign-out clears the session (Req 1.7). Existing users were backfilled to `emailVerified = true`.
+- **Email verification is NON-BLOCKING (Req 17.3):** login is handled by **Auth.js** Credentials at `/api/auth/*`; its `authorize()` does NOT check `emailVerified`, so users can sign in whether or not they have verified. Generic error on bad credentials (Req 1.4, 1.5); sign-out clears the session (Req 1.7). The verification issue/send/consume flow above still runs, but nothing gates access on it. (This was briefly a blocking gate; it was removed because the Resend sandbox sender only delivers to the account owner's address, which would otherwise lock out anyone signing up with a different email. Existing users had been backfilled to `emailVerified = true` during that period.)
 
 ### Professional (Req 2, 3, 4) — professional role
 - `PUT /professionals/me/profile` — name, type, specialty, bio; validates required fields (Req 2.3, 2.4).
