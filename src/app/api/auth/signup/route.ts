@@ -7,6 +7,7 @@ import {
   generateVerificationToken,
   sendVerificationEmail,
 } from "@/lib/email";
+import { setVerifyCookie } from "@/lib/verify-session";
 
 const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -38,8 +39,9 @@ export async function POST(request: Request) {
   // user (rolls back with signup) and email it after the commit succeeds.
   const verificationToken = generateVerificationToken();
 
+  let newUserId: string;
   try {
-    await prisma.$transaction(async (tx) => {
+    newUserId = await prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
         data: { email, passwordHash, role },
       });
@@ -61,7 +63,7 @@ export async function POST(request: Request) {
       }
 
       // Issue a single-use email verification token (Req 17). Verification is
-      // optional and non-blocking; this just makes the token available.
+      // now required to sign in; this token backs the emailed verify link.
       await tx.verificationToken.create({
         data: {
           token: verificationToken,
@@ -69,6 +71,8 @@ export async function POST(request: Request) {
           expiresAt: new Date(Date.now() + VERIFICATION_TTL_MS),
         },
       });
+
+      return user.id;
     }, {
       // Remote Supabase adds network latency; give the interactive transaction
       // more room than Prisma's 5s default to acquire a connection and commit.
@@ -93,15 +97,21 @@ export async function POST(request: Request) {
     );
   }
 
+  // Set the short-lived signed verification-session cookie so the pending
+  // page + check-verification endpoint can identify this user without auth
+  // and without exposing the email in the URL (Req 17).
+  await setVerifyCookie(newUserId);
+
   // Best-effort verification email AFTER the account is safely committed. A
-  // failure here is logged inside the helper and must not fail signup — the
-  // user can proceed and re-request verification later (Req 17).
+  // send failure is logged inside the helper and does not fail signup — the
+  // user lands on the pending page and can use "Resend" (Req 17).
   await sendVerificationEmail(email, verificationToken);
 
   return NextResponse.json(
     {
       ok: true,
-      message: "Account created. Check your email to verify (optional).",
+      message:
+        "Account created! Check your email to verify your address. You must verify to access your account.",
     },
     { status: 201 },
   );

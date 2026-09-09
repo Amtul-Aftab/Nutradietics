@@ -98,6 +98,10 @@ Key cross-phase dependencies:
 
   > Implementation: `src/lib/email.ts` (`generateVerificationToken`, `sendVerificationEmail`) posts to the Resend HTTP API and never throws - a missing `RESEND_API_KEY` or a non-2xx response is logged and signup still returns 201. Token is created inside the signup `$transaction` (rolls back with the user) and emailed only after the commit. `GET` handles the emailed link (clicks are GET); `POST` shares the same logic. Verification link base URL comes from `APP_BASE_URL` -> `NEXTAUTH_URL` -> `http://localhost:3000`.
 
+- [x] 1.8 Make email verification BLOCKING and REQUIRED (Req 17, revised): users cannot sign in until verified. Signup sets a short-lived signed HttpOnly `_verifySessionId` cookie (24h, user id only, HMAC via `AUTH_SECRET`) and redirects to a new unauthenticated `/verify-email-pending` page; that page shows the pending email (from the cookie session, not the URL), polls `GET /api/check-verification` every 5s, auto-redirects to `/signin?verified=true` once verified, and offers a "Resend verification email" action (`POST /api/resend-verification`). The Auth.js `authorize()` callback rejects unverified logins (after the password check) via an `UnverifiedEmailError` (`code: "unverified"`) surfaced on the sign-in page. `verify-email` now also clears the cookie. Signup form: name field required (label de-optionalized), "verification is optional" copy removed. Existing users backfilled to `emailVerified = true` so nobody is locked out.
+
+  > Implementation: `src/lib/verify-session.ts` signs/reads/clears the cookie; `check-verification` + `resend-verification` identify the user solely from it and return generic results on a missing/invalid cookie (no enumeration). NOTE: `RESEND_API_KEY` must be set in `.env` for the signup -> verify -> sign-in flow to work end-to-end; without it the send is skipped and unverified users cannot sign in.
+
 ### Phase 2: Professional Profile & Services (Req 2, 3)
 
 - [x] 2.1 Build `PUT /professionals/me/profile` to create/update name, professional type, specialty, bio; validate required fields and constrain type to the two allowed values (Req 2.1-2.4).

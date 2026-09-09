@@ -143,7 +143,7 @@ model User {
   email         String   @unique
   passwordHash  String
   role          Role
-  emailVerified Boolean  @default(false) // optional email verification (Req 17)
+  emailVerified Boolean  @default(false) // REQUIRED before sign-in (Req 17, blocking)
   createdAt     DateTime @default(now())
 
   professional  Professional?   // set when role = PROFESSIONAL
@@ -151,9 +151,9 @@ model User {
   verificationTokens VerificationToken[]
 }
 
-// Single-use, 24h email verification tokens (Req 17). Optional flow: signup
-// issues one and emails a link; /api/verify-email consumes it. Login never
-// checks emailVerified, so verification never blocks usage.
+// Single-use, 24h email verification tokens (Req 17). Blocking flow: signup
+// issues one and emails a link; /api/verify-email consumes it. Sign-in is
+// rejected until emailVerified is true (checked in the Auth.js authorize()).
 model VerificationToken {
   id        String   @id @default(uuid())
   token     String   @unique
@@ -389,9 +389,10 @@ A `Review` row is keyed uniquely by `appointmentId` (at most one per appointment
 All routes are Next.js route handlers under `app/api/**`. Auth required except sign-up and the Auth.js sign-in endpoint. Role guards noted per route.
 
 ### Auth (Req 1)
-- `POST /api/auth/signup` — custom route handler; body includes role; if role=professional, `professionalType` required (Req 1.2). Creates the user + role profile and rejects duplicate email with a generic error (Req 1.3). Also issues a single-use email verification token in the same transaction and sends a best-effort Resend email after commit; the send never blocks signup (Req 17.1–17.3).
-- `GET/POST /api/verify-email?token=…` — consumes a valid, unexpired verification token: sets `User.emailVerified = true`, deletes the token, and redirects to `/signin?verified=true`; invalid/expired tokens return 400 (Req 17.4, 17.5). `GET` serves the emailed link (clicks are GET); `POST` shares the same logic. Email verification is optional and non-blocking — the login flow does not check `emailVerified` (Req 17.6).
-- Login and logout are handled by **Auth.js** at its standard `/api/auth/*` endpoints (Credentials sign-in returns a generic error on failure — Req 1.4, 1.5; sign-out clears the session — Req 1.7). No custom login/logout handlers are needed.
+- `POST /api/auth/signup` — custom route handler; body includes role; if role=professional, `professionalType` required (Req 1.2). Creates the user + role profile and rejects duplicate email with a generic error (Req 1.3). Issues a single-use email verification token in the same transaction, sends the Resend email after commit, sets a short-lived signed HttpOnly `_verifySessionId` cookie (user id only), and redirects to `/verify-email-pending` (Req 17.1, 17.2).
+- `GET/POST /api/verify-email?token=…` — consumes a valid, unexpired verification token: sets `User.emailVerified = true`, deletes the token, clears the `_verifySessionId` cookie, and redirects to `/signin?verified=true`; invalid/expired tokens return 400 (Req 17.4, 17.5). `GET` serves the emailed link (clicks are GET); `POST` shares the same logic.
+- `GET /api/check-verification` / `POST /api/resend-verification` (unauthenticated) — identify the user solely from the signed `_verifySessionId` cookie; the first returns `{ emailVerified }` for the pending page's 5s poll, the second re-sends a fresh token/email. Both return a generic result when the cookie is missing/invalid (no enumeration) (Req 17.6, 17.7).
+- **Email verification is BLOCKING (Req 17.3):** login is handled by **Auth.js** Credentials at `/api/auth/*`; its `authorize()` rejects sign-in when `emailVerified` is not true (checked only after the password is confirmed) via an `UnverifiedEmailError` (`code: "unverified"`) surfaced on the sign-in page. Generic error on bad credentials (Req 1.4, 1.5); sign-out clears the session (Req 1.7). Existing users were backfilled to `emailVerified = true`.
 
 ### Professional (Req 2, 3, 4) — professional role
 - `PUT /professionals/me/profile` — name, type, specialty, bio; validates required fields (Req 2.3, 2.4).

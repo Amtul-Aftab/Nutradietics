@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { clearVerifyCookie } from "@/lib/verify-session";
 
 export const runtime = "nodejs";
 
 // Email verification consumer (Req 17). Emailed links are clicked as GET, so
-// GET is the primary handler; POST shares the same logic per the spec. On a
-// valid token: mark the user verified, delete the single-use token, and
-// redirect to the sign-in page with a success flag. Verification is optional
-// and never affects the ability to sign in.
+// GET is the primary handler; POST shares the same logic. On a valid token:
+// mark the user verified, delete the single-use token, clear the pending
+// verification cookie, and redirect to the sign-in page with a success flag.
+// Verification is required before a user can sign in.
 async function handle(request: Request): Promise<Response> {
   const token = new URL(request.url).searchParams.get("token");
 
@@ -43,6 +44,9 @@ async function handle(request: Request): Promise<Response> {
     }),
     prisma.verificationToken.delete({ where: { id: record.id } }),
   ]);
+
+  // Clear the pending-verification cookie now that this user is verified.
+  await clearVerifyCookie();
 
   return NextResponse.redirect(new URL("/signin?verified=true", request.url));
 }

@@ -28,8 +28,15 @@ function SignInForm() {
     });
 
     if (!res || res.error) {
-      // Generic message — do not reveal which field was wrong (Req 1.5).
-      setError("Invalid email or password.");
+      if (res?.code === "unverified") {
+        // Password was correct but the email isn't verified yet (Req 17).
+        setError(
+          "Please verify your email first. Check your inbox for the verification link.",
+        );
+      } else {
+        // Generic message — do not reveal which field was wrong (Req 1.5).
+        setError("Invalid email or password.");
+      }
       setSubmitting(false);
       return;
     }
@@ -46,7 +53,7 @@ function SignInForm() {
       <h1>Sign in</h1>
       {justVerified && (
         <p className="auth-page__success" role="status">
-          Your email has been verified. You can now sign in.
+          Email verified! You can now sign in.
         </p>
       )}
       {error && (
