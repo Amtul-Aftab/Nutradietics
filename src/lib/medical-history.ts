@@ -2,13 +2,22 @@ import { prisma } from "@/lib/prisma";
 
 export type MedicalHistoryEntryType = "INTAKE" | "SUMMARY" | "SESSION_RECORD";
 
+export interface MedicalHistoryQA {
+  question: string;
+  answer: string;
+}
+
 export interface MedicalHistoryEntry {
   id: string;
   type: MedicalHistoryEntryType;
   at: string; // ISO timestamp used for chronological ordering
   title: string;
-  /** Structured details rendered by the timeline UI. */
+  /** Free-text / labeled detail rows rendered by the timeline UI. */
   details: Record<string, string | null>;
+  /** Structured intake fields (raw key -> value) for readable rendering + BMI. */
+  standardFields?: Record<string, unknown> | null;
+  /** Structured follow-up Q/A pairs for readable rendering. */
+  answers?: MedicalHistoryQA[];
 }
 
 /**
@@ -40,10 +49,9 @@ export async function getMedicalHistory(
   const entries: MedicalHistoryEntry[] = [];
 
   for (const intake of intakes) {
-    const answers = intake.questions
+    const answers: MedicalHistoryQA[] = intake.questions
       .filter((q) => q.answer)
-      .map((q) => `${q.question} — ${q.answer}`)
-      .join("\n");
+      .map((q) => ({ question: q.question, answer: q.answer as string }));
     entries.push({
       id: `intake-${intake.id}`,
       type: "INTAKE",
@@ -52,11 +60,11 @@ export async function getMedicalHistory(
       details: {
         description: intake.description,
         professionalType: intake.professionalType,
-        standardFields: intake.standardFields
-          ? JSON.stringify(intake.standardFields)
-          : null,
-        followUpAnswers: answers || null,
       },
+      // Pass structured fields through; the timeline renders labeled rows + BMI.
+      standardFields:
+        (intake.standardFields as Record<string, unknown> | null) ?? null,
+      answers,
     });
   }
 

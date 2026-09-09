@@ -8,7 +8,7 @@ import { getMedicalHistory } from "@/lib/medical-history";
 import { MedicalHistoryTimeline } from "@/components/MedicalHistoryTimeline";
 import { SessionRecordForm } from "./SessionRecordForm";
 import { AppointmentDetailsForm } from "./AppointmentDetailsForm";
-import { formatRange } from "@/lib/format";
+import { formatRange, humanizeEnum } from "@/lib/format";
 
 export const metadata = { title: "Appointment" };
 
@@ -64,7 +64,7 @@ export default async function AppointmentDetailPage({
           {formatRange(appointment.timeSlot.startsAt, appointment.timeSlot.endsAt)}
         </p>
         <p>
-          <strong>Status:</strong> {appointment.status}
+          <strong>Status:</strong> {humanizeEnum(appointment.status)}
         </p>
       </section>
 
