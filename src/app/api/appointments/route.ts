@@ -7,6 +7,7 @@ import {
   SlotNotFoundError,
   SlotUnavailableError,
 } from "@/lib/booking";
+import { sendBookingConfirmationEmails } from "@/lib/booking-emails";
 
 export const runtime = "nodejs";
 
@@ -84,6 +85,11 @@ export async function POST(request: Request) {
       timeSlotId,
       intakeId: intakeId || null,
     });
+
+    // Best-effort confirmation emails to client + professional. This never
+    // throws (see sendBookingConfirmationEmails) so it cannot block or fail
+    // the booking response.
+    await sendBookingConfirmationEmails(appointment.id);
 
     return NextResponse.json({ appointment }, { status: 201 });
   } catch (error) {
