@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Role } from "@prisma/client";
 import "./globals.css";
 import { auth } from "@/auth";
 import { Providers } from "@/components/Providers";
@@ -51,6 +52,10 @@ export default async function RootLayout({
                   <Link href={dashboardPathForRole(session.user.role)}>
                     Dashboard
                   </Link>
+                  {/* Health calculator: professionals only. */}
+                  {session.user.role === Role.PROFESSIONAL && (
+                    <Link href="/health-calculator">Health calculator</Link>
+                  )}
                   <SignOutButton />
                 </>
               ) : (
