@@ -46,6 +46,7 @@ export function ThinkingIndicator({ message }: { message: string }) {
       </div>
 
       <p className="thinking__message">{message}</p>
+      <p className="ai-credit">Powered by Google Gemini</p>
     </div>
   );
 }

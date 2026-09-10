@@ -601,6 +601,15 @@ a {
   color: var(--teal);
 }
 
+/* Subtle "Powered by Google Gemini" credit on AI screens. */
+.ai-credit {
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  opacity: 0.75;
+  margin-top: var(--space-2);
+}
+
 @keyframes thinking-bob {
   0%,
   100% {

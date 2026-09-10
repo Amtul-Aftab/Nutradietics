@@ -476,6 +476,7 @@ function BookStep({ router, data }: StepProps) {
         {m.bio && <p className="browse__bio">{m.bio}</p>}
         <h3>Why we matched you</h3>
         <p className="browse__bio">{m.rationale}</p>
+        <p className="ai-credit">Powered by Google Gemini</p>
         <p className="match__trust">
           Matched from your intake — you&apos;re always free to review the
           details before booking, and your information is only shared with the
