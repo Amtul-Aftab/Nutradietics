@@ -67,16 +67,15 @@ function clientForKey(apiKey: string): GoogleGenAI {
  * common rate-limit text as a defensive fallback for transport-layer variants.
  */
 function isRateLimitError(error: unknown): boolean {
-  if (typeof error === "object" && error !== null) {
-    const status = (error as { status?: unknown }).status;
-    if (status === 429) return true;
-    const code = (error as { code?: unknown }).code;
-    if (code === 429) return true;
-  }
-  const message = error instanceof Error ? error.message : String(error);
-  return /\b429\b|rate limit|too many requests|resource_exhausted|quota/i.test(
-    message,
-  );
+  if (typeof error !== "object" || error === null) return false;
+  // Rely ONLY on the structured numeric status/code the SDK attaches (429).
+  // A message-text fallback (matching "429"/"quota"/etc.) was too broad — it
+  // misclassified non-429 failures whose message merely mentioned those terms
+  // as rate-limits, causing wasteful key rotation. HTTP 429 is the sole
+  // trigger for failover.
+  const status = (error as { status?: unknown }).status;
+  const code = (error as { code?: unknown }).code;
+  return status === 429 || code === 429;
 }
 
 /**
