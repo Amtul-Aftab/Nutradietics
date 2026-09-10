@@ -1335,6 +1335,30 @@ a {
   text-align: center;
 }
 
+/* "Start a new intake" affordance shown while resuming an existing intake. */
+.wizard__restart {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.wizard__restart a {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--coral-dark);
+}
+
+.wizard__restart a:hover {
+  text-decoration: underline;
+}
+
+/* Action row on the no-match screen (Try again + Start a new intake). */
+.wizard__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
 /* --- Avatar --- */
 .avatar {
   display: inline-flex;

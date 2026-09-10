@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button, FormField, Input, ErrorBanner } from "@/components/ui";
 import { ThinkingIndicator } from "@/components/ThinkingIndicator";
 import {
@@ -53,8 +54,19 @@ export function IntakeWizard({ data }: { data: WizardData }) {
   const router = useRouter();
   const currentIndex = INTAKE_STEPS.indexOf(data.step);
 
+  // Show a "start over" affordance whenever we're resuming an existing intake
+  // (i.e. one already exists and we're past the initial describe step). Links
+  // to the existing ?fresh=1 route, which begins a brand-new intake and leaves
+  // the old one untouched in the DB.
+  const isResuming = data.intakeId !== null && data.step !== "DESCRIBE";
+
   return (
     <div className="wizard">
+      {isResuming && (
+        <div className="wizard__restart">
+          <Link href="/client/intake?fresh=1">Start a new intake</Link>
+        </div>
+      )}
       <ol className="wizard__steps">
         {INTAKE_STEPS.map((s, i) => (
           <li
@@ -384,11 +396,16 @@ function MatchStep({ router, data }: StepProps) {
         <h2>No match available yet</h2>
         <p className="appointment__hint">
           We couldn&apos;t find an available professional of the right type right
-          now. Please check back later.
+          now. You can check back later, or start over with a new description.
         </p>
-        <Button variant="secondary" onClick={run} loading={retrying}>
-          Try again
-        </Button>
+        <div className="wizard__actions">
+          <Button variant="secondary" onClick={run} loading={retrying}>
+            Try again
+          </Button>
+          <Link href="/client/intake?fresh=1" className="btn btn--primary">
+            Start a new intake
+          </Link>
+        </div>
       </div>
     );
   }
