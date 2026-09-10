@@ -25,6 +25,7 @@ export default async function AppointmentDetailPage({
 
   const professional = await prisma.professional.findUnique({
     where: { userId: session.user.id },
+    select: { id: true, type: true },
   });
   if (!professional) redirect("/signin");
 
@@ -45,8 +46,12 @@ export default async function AppointmentDetailPage({
     appointment.clientProfile.name ?? appointment.clientProfile.user.email;
 
   // The professional has an appointment with this client, so they may view
-  // the client's medical history for continuity of care (Req 13.2, 13.5).
-  const history = await getMedicalHistory(appointment.clientProfileId);
+  // the client's medical history — scoped to their own discipline and records
+  // only, no cross-professional leakage (Req 13.2, 13.5).
+  const history = await getMedicalHistory(appointment.clientProfileId, {
+    professionalId: professional.id,
+    professionalType: professional.type,
+  });
 
   return (
     <main className="dashboard">

@@ -1,3 +1,4 @@
+import { type ProfessionalType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export type MedicalHistoryEntryType = "INTAKE" | "SUMMARY" | "SESSION_RECORD";
@@ -21,24 +22,78 @@ export interface MedicalHistoryEntry {
 }
 
 /**
+ * When a professional is the viewer, their identity is passed here so every
+ * query can be scoped to only their relevant records — no cross-professional
+ * data leakage (Req 13.5). When absent the client is the viewer and receives
+ * their full history across all professionals (Req 13.6).
+ */
+export interface ProfessionalContext {
+  /** Professional.id (the row PK, not User.id). */
+  professionalId: string;
+  /** Filters intakes and summaries to this professional's discipline. */
+  professionalType: ProfessionalType;
+}
+
+/**
  * Assembles a client's medical history as a chronological read-model from
  * their intakes, AI patient summaries, and professional-entered session
  * records (Req 13.1, 13.3, 13.4). Kept derived (no dedicated table) so it
  * always reflects the source records.
+ *
+ * When `professionalContext` is supplied the result is scoped:
+ *   - Intakes: only those matching the professional's type
+ *     (Intake.professionalType, e.g. NUTRITIONIST).
+ *   - AI summaries: only those attached to the scoped intakes (via the same
+ *     professionalType filter on the parent intake).
+ *   - Session records: only records authored by this professional
+ *     (SessionRecord → Appointment.professionalId).
+ *
+ * This ensures a nutritionist sees only nutritionist intakes/summaries/records
+ * and a fitness trainer sees only fitness trainer data — even for a client who
+ * has appointments with both. No schema migration is required because
+ * Intake.professionalType and Appointment.professionalId already exist.
  */
 export async function getMedicalHistory(
   clientProfileId: string,
+  professionalContext?: ProfessionalContext,
 ): Promise<MedicalHistoryEntry[]> {
   const [intakes, summaries, sessionRecords] = await Promise.all([
     prisma.intake.findMany({
-      where: { clientProfileId },
+      where: {
+        clientProfileId,
+        // Scope to the requesting professional's discipline when viewing as a
+        // professional. Intakes without a professionalType (status DESCRIBED,
+        // not yet classified) are omitted from professional views — they have
+        // no type association and cannot be attributed to a discipline yet.
+        ...(professionalContext
+          ? { professionalType: professionalContext.professionalType }
+          : {}),
+      },
       include: { questions: { orderBy: { order: "asc" } } },
     }),
     prisma.patientSummary.findMany({
-      where: { intake: { clientProfileId } },
+      where: {
+        intake: {
+          clientProfileId,
+          // Summaries are scoped via their parent intake's professionalType.
+          ...(professionalContext
+            ? { professionalType: professionalContext.professionalType }
+            : {}),
+        },
+      },
     }),
     prisma.sessionRecord.findMany({
-      where: { appointment: { clientProfileId } },
+      where: {
+        appointment: {
+          clientProfileId,
+          // Session records are scoped to the exact professional who authored
+          // them — not just the same type, but the same individual — so two
+          // nutritionists cannot see each other's session notes.
+          ...(professionalContext
+            ? { professionalId: professionalContext.professionalId }
+            : {}),
+        },
+      },
       include: {
         professional: { select: { name: true, type: true } },
         appointment: { select: { id: true } },
